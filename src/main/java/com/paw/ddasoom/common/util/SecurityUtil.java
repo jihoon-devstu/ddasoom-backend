@@ -1,4 +1,4 @@
-package com.paw.ddasoom.common.security;
+package com.paw.ddasoom.common.util;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

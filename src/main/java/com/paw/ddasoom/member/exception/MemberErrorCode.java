@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum MemberErrorCode implements ErrorCode{
 
-  MEMBER_NOT_FOUNDE(HttpStatus.NOT_FOUND, "Member001", "해당 회원을 찾을 수 없습니다.");
+  MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "Member001", "해당 회원을 찾을 수 없습니다.");
 
 
   

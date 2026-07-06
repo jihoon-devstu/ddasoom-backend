@@ -40,3 +40,6 @@ out/
 application.yml
 
 .DS_Store
+
+### CLAUDE md 파일 각자 생성
+CLAUDE.md

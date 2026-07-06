@@ -37,6 +37,23 @@ spring:
     redis:
       host: localhost
       port: 6379
+  
+  # [4. Mail 설정]
+  mail:
+    host: smtp.gmail.com
+    port: 587                         # Gmail SMTP TLS 표준 포트
+    username: useremail@gmail.com # 본인의 구글 이메일 주소 전체
+    password: **** **** **** ****        # 구글에서 발급받은 16자리 앱 비밀번호 (공백 없이 입력)
+    properties:
+      mail:
+        smtp:
+          auth: true                  # SMTP 인증 사용 여부
+          starttls:
+            enable: true              # TLS 보안 연결 활성화 (필수)
+            required: true            # TLS 연결 강제화
+          connectiontimeout: 5000     # 연결 대기 시간 (5초)
+          timeout: 5000               # 응답 대기 시간 (5초)
+          writetimeout: 5000          # 쓰기 작업 대기 시간 (5초)
 
   # [7. SMTP & 3. Redis 방어용 자동 설정 제외]
   # Redis 서버가 없거나 Gmail 설정을 안 한 팀원들의 서버가 터지는 것을 막기 위해 기본적으로 자동 설정을 꺼둡니다.

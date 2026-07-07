@@ -17,11 +17,11 @@ import lombok.Getter;
 public abstract class BaseTimeEntity {
 
   @CreatedDate
-    @Column(updatable = false, nullable = false)
-    private LocalDateTime createdAt;
+  @Column(updatable = false, nullable = false,  columnDefinition = "DATETIME(6)")
+  private LocalDateTime createdAt;
 
-    @LastModifiedDate
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
+  @LastModifiedDate
+  @Column(nullable = false ,  columnDefinition = "DATETIME(6)")
+  private LocalDateTime updatedAt;
 
 }

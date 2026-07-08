@@ -1,5 +1,12 @@
 package com.paw.ddasoom.foster.domain;
 
+import java.sql.Types;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import org.hibernate.annotations.JdbcTypeCode;
+
+import com.paw.ddasoom.animal.domain.Animal;
 import com.paw.ddasoom.common.util.BaseTimeEntity;
 import com.paw.ddasoom.member.domain.Member;
 
@@ -19,11 +26,6 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.JdbcTypeCode;
-
-import java.sql.Types;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Getter

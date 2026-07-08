@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "member_social", uniqueConstraints = {
-    @UniqueConstraint(name = "uk_member_socials_provider", columnNames = {"provider", "provider_id"}) // 복합 유니크 키
+    @UniqueConstraint(name = "uk_member_social_provider", columnNames = {"provider", "provider_id"}) // 복합 유니크 키
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -42,7 +42,7 @@ public class MemberSocial extends BaseTimeEntity{
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "member_id", nullable = false,
-     foreignKey = @ForeignKey(name = "fk_member_socials_member"))
+     foreignKey = @ForeignKey(name = "fk_member_social_member"))
   private Member member;
 
   @Builder

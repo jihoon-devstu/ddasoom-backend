@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
  *   없으면 이메일 충돌 검사 → 충돌 시 AUTH_106 (수동 연동 정책)
  *   신규면 Member(GUEST, password=null, nickname=null) + MemberSocial 생성
  * 여기서 던진 OAuth2AuthenticationException은 OAuth2FailureHandler가 받아 프론트로 전달.
+ * -> 컨트롤러가 아니라 Security 필터 체인 내부에서 호출되므로, AuthException을 던지면 GlobalExceptionHandler에 못 닿고 500이 뜬다.
  */
 
 @Slf4j

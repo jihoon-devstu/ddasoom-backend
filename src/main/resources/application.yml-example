@@ -76,6 +76,7 @@ logging:
 
 # [7. JWT 설정]
 ddasoom:
+  service-url: http://localhost:5173   # 프론트 주소 — 소셜 콜백 리다이렉트 + 메일 버튼 링크
   jwt:
     secret: # Base64 인코딩된 256bit 이상 키 (openssl rand -base64 64 로 생성)
     access-token-validity: 1800000     # AT 30분 (ms) — SECURITY-FLOW.md 기준

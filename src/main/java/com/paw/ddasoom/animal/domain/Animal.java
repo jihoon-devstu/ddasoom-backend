@@ -2,8 +2,6 @@ package com.paw.ddasoom.animal.domain;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.Check;
-
 import com.paw.ddasoom.common.util.BaseTimeEntity;
 
 import jakarta.persistence.Column;

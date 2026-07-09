@@ -133,6 +133,9 @@ public class AuthController {
     /**
      * 닉네임 중복 확인 (회원가입/추가정보 폼 실시간 검증용).
      * 사용 가능 = true. 이메일 중복 확인은 열거 공격 방지를 위해 제공하지 않음.
+     * @Vaild 어노테이션은 사용하지 않음. 
+     *    -> 중복확인의 경우 , 형식이 틀린 닉네임은 어차피 DB에 없음. 
+     *    -> 형식 검증은 최종 제출의 @Pattern 이 담당하므로 중복역할 제거.
      */
     @GetMapping("/nickname/available")
     public ResponseEntity<ApiResponse<Boolean>> checkNicknameAvailable(

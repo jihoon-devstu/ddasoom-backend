@@ -1,12 +1,16 @@
 package com.paw.ddasoom.member.service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.paw.ddasoom.auth.exception.AuthErrorCode;
 import com.paw.ddasoom.auth.exception.AuthException;
+import com.paw.ddasoom.auth.service.RedisTokenService;
 import com.paw.ddasoom.member.domain.Member;
 import com.paw.ddasoom.member.domain.Role;
+import com.paw.ddasoom.member.dto.request.MemberUpdateRequest;
+import com.paw.ddasoom.member.dto.request.PasswordChangeRequest;
 import com.paw.ddasoom.member.dto.request.SocialExtraInfoRequest;
 import com.paw.ddasoom.member.dto.response.MemberResponse;
 import com.paw.ddasoom.member.exception.MemberErrorCode;
@@ -20,6 +24,9 @@ import lombok.RequiredArgsConstructor;
 public class MemberService {
 
   private final MemberRepository memberRepository;
+  private final RedisTokenService redisTokenService;
+  private final PasswordEncoder passwordEncoder;
+
 
   /**
    * 소셜 가입자(GUEST) 추가정보 입력 → USER 승급.
@@ -53,5 +60,38 @@ public class MemberService {
   @Transactional(readOnly = true)
   public MemberResponse getMyInfo(Long memberId) {
       return MemberResponse.from(getMember(memberId));
+  }
+
+  /** 프로필 수정 — 닉네임이 실제로 바뀌는 경우에만 중복 검사 (본인 닉네임 유지 제출 허용) */
+  @Transactional
+  public MemberResponse updateProfile(Long memberId, MemberUpdateRequest request) {
+      Member member = getMember(memberId);
+
+      boolean isNicknameChanged = !request.getNickname().equals(member.getNickname());
+      if (isNicknameChanged && memberRepository.existsByNickname(request.getNickname())) {
+          throw new AuthException(AuthErrorCode.NICKNAME_ALREADY_EXISTS);
+      }
+
+      member.updateProfile(request.getNickname(), request.getTel());
+      return MemberResponse.from(member);
+  }
+
+  /** 비밀번호 변경 — 성공 시 전 세션 무효화(RT 삭제) → 재로그인 필요 */
+  @Transactional
+  public void changePassword(Long memberId, PasswordChangeRequest request) {
+      Member member = getMember(memberId);
+
+      // 소셜 전용 회원(password=null)은 변경 대상 아님 — matches의 NPE 방지 겸 명시적 안내
+      if (member.getPassword() == null) {
+          throw new MemberException(MemberErrorCode.SOCIAL_MEMBER_HAS_NO_PASSWORD);
+      }
+      if (!passwordEncoder.matches(request.getCurrentPassword(), member.getPassword())) {
+          throw new MemberException(MemberErrorCode.PASSWORD_MISMATCH);
+      }
+
+      member.changePassword(passwordEncoder.encode(request.getNewPassword()));
+
+      // 비밀번호 변경 = 자격증명 교체 → 기존 세션 전부 무효화 (탈취 의심 시나리오 방어)
+      redisTokenService.deleteRefreshTokens(memberId);
   }
 }

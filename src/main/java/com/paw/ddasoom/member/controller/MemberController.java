@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.paw.ddasoom.common.dto.ApiResponse;
 import com.paw.ddasoom.common.security.CustomUserDetails;
+import com.paw.ddasoom.member.dto.request.MemberUpdateRequest;
+import com.paw.ddasoom.member.dto.request.PasswordChangeRequest;
 import com.paw.ddasoom.member.dto.request.SocialExtraInfoRequest;
 import com.paw.ddasoom.member.dto.response.MemberResponse;
 import com.paw.ddasoom.member.service.MemberService;
@@ -34,10 +36,28 @@ public class MemberController {
       return ResponseEntity.ok(ApiResponse.success("회원가입이 완료되었습니다.", response));
   }
 
-    /** 내 정보 조회. 인가: USER/ADMIN (SecurityConfig) */
+  /** 내 정보 조회. 인가: USER/ADMIN (SecurityConfig) */
   @GetMapping("/me")
   public ResponseEntity<ApiResponse<MemberResponse>> getMyInfo(
           @AuthenticationPrincipal CustomUserDetails userDetails) {
       return ResponseEntity.ok(ApiResponse.success(memberService.getMyInfo(userDetails.getMemberId())));
+  }
+
+  /** 프로필(닉네임/전화번호) 수정 */
+  @PatchMapping("/me")
+  public ResponseEntity<ApiResponse<MemberResponse>> updateProfile(
+          @AuthenticationPrincipal CustomUserDetails userDetails,
+          @Valid @RequestBody MemberUpdateRequest request) {
+      MemberResponse response = memberService.updateProfile(userDetails.getMemberId(), request);
+      return ResponseEntity.ok(ApiResponse.success("회원 정보가 수정되었습니다.", response));
+  }
+
+  /** 비밀번호 변경 — 성공 시 재로그인 필요 (RT 무효화) */
+  @PatchMapping("/me/password")
+  public ResponseEntity<ApiResponse<Void>> changePassword(
+          @AuthenticationPrincipal CustomUserDetails userDetails,
+          @Valid @RequestBody PasswordChangeRequest request) {
+      memberService.changePassword(userDetails.getMemberId(), request);
+      return ResponseEntity.ok(ApiResponse.success("비밀번호가 변경되었습니다. 다시 로그인해 주세요."));
   }
 }

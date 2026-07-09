@@ -88,4 +88,22 @@ public class PostTest {
         assertThat(post.getContent()).isEqualTo("수정된 내용");
     }
 
+    // soft-delete 테스트
+    @Test
+    @DisplayName("게시글을 삭제하면 isDeleted 상태가 true로 바뀌고, 삭제 시간이 기록된다.")
+    void softDeleteTest() {
+
+        // given
+        Post post = Post.builder()
+                .title("테스트 제목")
+                .content("테스트 내용")
+                .build();
+
+        // when
+        post.softDelete();
+
+        // then
+        assertThat(post.isDeleted()).isTrue();
+        assertThat(post.getDeletedAt()).isNotNull();
+    }
 }

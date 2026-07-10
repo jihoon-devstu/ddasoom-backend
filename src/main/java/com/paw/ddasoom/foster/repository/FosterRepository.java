@@ -1,5 +1,11 @@
 package com.paw.ddasoom.foster.repository;
 
-public interface FosterRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.paw.ddasoom.foster.domain.Foster;
+
+public interface FosterRepository extends JpaRepository<Foster,Long>{
+
+  
 
 }

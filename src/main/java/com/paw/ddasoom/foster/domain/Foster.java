@@ -53,39 +53,72 @@ public class Foster extends BaseTimeEntity {
   private Member reviewer;
 
   @JdbcTypeCode(Types.CHAR)
-  @Column(name = "foster_num", nullable = false, updatable = false, length = 36, columnDefinition = "CHAR(36)")
+  @Column(nullable = false, updatable = false, length = 36, columnDefinition = "CHAR(36)")
   private UUID fosterNum;
 
-  @Column(name = "age", nullable = false, length = 10)
+  @Column(nullable = false, length = 10)
   private String age;
 
-  @Column(name = "job", nullable = false, length = 30)
+  @Column(nullable = false, length = 30)
   private String job;
 
-  @Column(name = "message", columnDefinition = "TEXT")
+  @Column(columnDefinition = "TEXT")
   private String message;
 
-  @Column(name = "answer", columnDefinition = "TEXT")
+  @Column(columnDefinition = "TEXT")
   private String answer;
 
   @Enumerated(EnumType.STRING)
   @JdbcTypeCode(Types.VARCHAR)
-  @Column(name = "status", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
-  private FosterStatus status;
+  @Column(nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
+  private FosterStatus status = FosterStatus.PENDING;
 
-  @Column(name = "foster_start_at", columnDefinition = "DATETIME(6)")
-  private LocalDateTime fostertartAt;
+  @Column(columnDefinition = "DATETIME(6)")
+  private LocalDateTime fosterStartAt;
 
-  @Column(name = "foster_end_at", columnDefinition = "DATETIME(6)")
+  @Column(columnDefinition = "DATETIME(6)")
   private LocalDateTime fosterEndAt;
 
-  @Column(name = "foster_extend_at", columnDefinition = "DATETIME(6)")
+  @Column(columnDefinition = "DATETIME(6)")
   private LocalDateTime fosterExtendAt;
 
-  @Column(name = "foster_complete_at", columnDefinition = "DATETIME(6)")
+  @Column(columnDefinition = "DATETIME(6)")
   private LocalDateTime fosterCompleteAt;
 
-  @Column(name = "deleted_at", columnDefinition = "DATETIME(6)")
+  @Column(columnDefinition = "DATETIME(6)")
   private LocalDateTime deletedAt;
+
+  private Foster(
+      Animal animal,
+      Member user,
+      String age,
+      String job,
+      String message) {
+    this.animal = animal;
+    this.user = user;
+    this.fosterNum = UUID.randomUUID();
+    this.age = age;
+    this.job = job;
+    this.message = message;
+    this.status = FosterStatus.PENDING;
+  }
+
+  public static Foster create(
+      Animal animal,
+      Member user,
+      String age,
+      String job,
+      String message) {
+    return new Foster(
+        animal,
+        user,
+        age,
+        job,
+        message);
+  }
+
+  public void delete() {
+    this.deletedAt = LocalDateTime.now();
+  }
 
 }

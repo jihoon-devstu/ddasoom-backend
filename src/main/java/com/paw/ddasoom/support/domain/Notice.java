@@ -58,6 +58,9 @@ public class Notice extends BaseTimeEntity {
   @Column(nullable = false)
   private Boolean isVisible = true;
 
+    @Column(name = "pin_order")
+    private Integer pinOrder; // NULL = 미고정
+
   /*
    * [Soft Delete(논리 삭제)를 위한 데이터 보존]
    * DB에서 데이터를 아예 완전히 지워버리는(Hard Delete) 대신,
@@ -92,6 +95,16 @@ public class Notice extends BaseTimeEntity {
   /* 공지사항 노출 여부 전환 */
   public void changeVisibility(boolean isVisible) {
     this.isVisible = isVisible;
+  }
+
+  /* 리치도메인 메서드 -> 고정 (순서 지정) */
+  public void pin(int order) {
+      this.pinOrder = order;
+  }
+
+  /* 리치도메인 메서드 -> 고정 해제 */
+  public void unpin() {
+      this.pinOrder = null;
   }
 
   /* 논리 삭제 수행 */

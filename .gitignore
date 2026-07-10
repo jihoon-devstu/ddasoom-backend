@@ -41,5 +41,6 @@ application.yml
 
 .DS_Store
 
-### CLAUDE md 파일 각자 생성
-CLAUDE.md
+# 로컬 테스트용 MinIO 실행 파일 및 데이터 폴더 제외
+/minio/minio.exe
+/minio/

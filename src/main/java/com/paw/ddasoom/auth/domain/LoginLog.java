@@ -1,5 +1,6 @@
 package com.paw.ddasoom.auth.domain;
 
+import com.paw.ddasoom.common.util.BaseTimeEntity;
 import com.paw.ddasoom.member.domain.Member;
 
 import jakarta.persistence.Column;
@@ -24,7 +25,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "login_log")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class LoginLog {
+public class LoginLog extends BaseTimeEntity{
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "login_log_id")

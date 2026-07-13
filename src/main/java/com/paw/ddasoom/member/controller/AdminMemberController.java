@@ -30,10 +30,10 @@ public class AdminMemberController {
   /** 회원 목록 — keyword(이메일/닉네임 부분일치), role 필터, 가입일 최신순 */
   @GetMapping
   public ResponseEntity<ApiResponse<PageResponse<AdminMemberResponse>>> getMembers(
-          @RequestParam(required = false) String keyword,
-          @RequestParam(required = false) Role role,
-          @RequestParam(defaultValue = "0") int page,
-          @RequestParam(defaultValue = "10") int size) {
+          @RequestParam(name = "keyword", required = false) String keyword,
+          @RequestParam(name = "role", required = false) Role role,
+          @RequestParam(name = "page", defaultValue = "0") int page,
+          @RequestParam(name = "size", defaultValue = "10") int size) {
 
       return ResponseEntity.ok(ApiResponse.success(
               adminMemberService.getMembers(keyword, role, PageRequest.of(page, size))));
@@ -42,16 +42,16 @@ public class AdminMemberController {
   /** 회원 상세 — 기본정보 + 소셜 연동 + 최근 로그인 이력 5건 */
   @GetMapping("/{memberId}")
   public ResponseEntity<ApiResponse<AdminMemberDetailResponse>> getMemberDetail(
-          @PathVariable Long memberId) {
+          @PathVariable(name = "memberId") Long memberId) {
       return ResponseEntity.ok(ApiResponse.success(adminMemberService.getMemberDetail(memberId)));
   }
 
   /** 로그인 이력 전체 (페이징) — 상세 화면의 "전체 보기" 탭용 */
   @GetMapping("/{memberId}/login-logs")
   public ResponseEntity<ApiResponse<PageResponse<LoginLogResponse>>> getLoginLogs(
-          @PathVariable Long memberId,
-          @RequestParam(defaultValue = "0") int page,
-          @RequestParam(defaultValue = "20") int size) {
+          @PathVariable(name = "memberId") Long memberId,
+          @RequestParam(name = "page", defaultValue = "0") int page,
+          @RequestParam(name = "size", defaultValue = "20") int size) {
 
       return ResponseEntity.ok(ApiResponse.success(
               adminMemberService.getLoginLogs(memberId, PageRequest.of(page, size))));
@@ -59,14 +59,14 @@ public class AdminMemberController {
 
   /** 강제 탈퇴 — ADMIN 계정(자기 자신 포함) 불가 */
   @DeleteMapping("/{memberId}")
-  public ResponseEntity<ApiResponse<Void>> forceWithdraw(@PathVariable Long memberId) {
+  public ResponseEntity<ApiResponse<Void>> forceWithdraw(@PathVariable(name = "memberId") Long memberId) {
       adminMemberService.forceWithdraw(memberId);
       return ResponseEntity.ok(ApiResponse.success("해당 회원을 강제 탈퇴 처리했습니다."));
   }
 
   /** 계정 복구 — 잘못된 강제탈퇴/억울한 탈퇴 구제 (1:1 문의 연계) */
   @PatchMapping("/{memberId}/restore")
-  public ResponseEntity<ApiResponse<AdminMemberResponse>> restore(@PathVariable Long memberId) {
+  public ResponseEntity<ApiResponse<AdminMemberResponse>> restore(@PathVariable(name = "memberId") Long memberId) {
       AdminMemberResponse response = adminMemberService.restore(memberId);
       return ResponseEntity.ok(ApiResponse.success("계정이 복구되었습니다.", response));
   }

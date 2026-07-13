@@ -9,6 +9,7 @@ import com.paw.ddasoom.animal.domain.Animal;
 import com.paw.ddasoom.animal.exception.AnimalErrorCode;
 import com.paw.ddasoom.animal.exception.AnimalException;
 import com.paw.ddasoom.animal.repository.AnimalRepository;
+import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.foster.domain.Foster;
 import com.paw.ddasoom.foster.dto.request.FosterCreateRequest;
 import com.paw.ddasoom.foster.dto.request.FosterUpdateRequest;
@@ -28,66 +29,68 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FosterService {
 
-    private final FosterRepository fosterRepository;
-    private final AnimalRepository animalRepository;
-    private final MemberRepository memberRepository;
+        private final FosterRepository fosterRepository;
+        private final AnimalRepository animalRepository;
+        private final MemberRepository memberRepository;
 
-    /** 유저 글 작성 */
-    @Transactional
-    public void create(Long memberId, FosterCreateRequest request) {
+        /** 유저 글 작성 */
+        @Transactional
+        public void create(Long memberId, FosterCreateRequest request) {
 
-        Animal animal = animalRepository.findById(request.getAnimalId())
-                .orElseThrow(() -> new AnimalException(AnimalErrorCode.ANIMAL_NOT_FOUND));
+                Animal animal = animalRepository.findById(request.getAnimalId())
+                                .orElseThrow(() -> new AnimalException(AnimalErrorCode.ANIMAL_NOT_FOUND));
 
-        Member user = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+                Member user = memberRepository.findById(memberId)
+                                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        Foster foster = Foster.create(
-                animal,
-                user,
-                request.getAge(),
-                request.getJob(),
-                request.getMessage());
+                Foster foster = Foster.create(
+                                animal,
+                                user,
+                                request.getAge(),
+                                request.getJob(),
+                                request.getMessage());
 
-        fosterRepository.save(foster);
+                fosterRepository.save(foster);
 
-    }
+        }
 
-    /** 유저 글 수정 */
-    @Transactional
-    public void update(Long memberId, Long fosterId, FosterUpdateRequest request) {
-        Foster foster = fosterRepository.findByFosterIdAndUser_IdAndDeletedAtIsNull(fosterId, memberId)
-                .orElseThrow(() -> new FosterException(FosterErrorCode.FOSTER_NOT_FOUND));
+        /** 유저 글 수정 */
+        @Transactional
+        public void update(Long memberId, Long fosterId, FosterUpdateRequest request) {
+                Foster foster = fosterRepository.findByFosterIdAndUser_IdAndDeletedAtIsNull(fosterId, memberId)
+                                .orElseThrow(() -> new FosterException(FosterErrorCode.FOSTER_NOT_FOUND));
 
-        foster.updateUserRequest(
-                request.getAge(),
-                request.getJob(),
-                request.getMessage());
+                foster.updateUserRequest(
+                                request.getAge(),
+                                request.getJob(),
+                                request.getMessage());
 
-    }
+        }
 
-    /** 유저 글 조회(리스트) */
-    @Transactional(readOnly = true)
-    public Page<FosterUserListResponse> getFosterList(Long memberId, Pageable pageable) {
-        return fosterRepository.findAllByUser_IdAndDeletedAtIsNullOrderByCreatedAtDesc(memberId, pageable)
-                .map(FosterUserListResponse::from);
-    }
+        /** 유저 글 조회(리스트) */
+        @Transactional(readOnly = true)
+        public PageResponse<FosterUserListResponse> getFosterList(Long memberId, Pageable pageable) {
+                Page<Foster> fosterPage = fosterRepository
+                                .findAllByUser_IdAndDeletedAtIsNullOrderByCreatedAtDesc(memberId, pageable);
 
-    /** 유저 글 조회(디테일) */
-    @Transactional(readOnly = true)
-    public FosterUserDetailResponse getFosterDetail(Long memberId, Long fosterId) {
-        Foster foster = fosterRepository.findByFosterIdAndUser_IdAndDeletedAtIsNull(fosterId, memberId)
-                .orElseThrow(() -> new FosterException(FosterErrorCode.FOSTER_NOT_FOUND));
+                return PageResponse.of(fosterPage, FosterUserListResponse::from);
+        }
 
-        return FosterUserDetailResponse.from(foster);
-    }
+        /** 유저 글 조회(디테일) */
+        @Transactional(readOnly = true)
+        public FosterUserDetailResponse getFosterDetail(Long memberId, Long fosterId) {
+                Foster foster = fosterRepository.findByFosterIdAndUser_IdAndDeletedAtIsNull(fosterId, memberId)
+                                .orElseThrow(() -> new FosterException(FosterErrorCode.FOSTER_NOT_FOUND));
 
-    /** 유저 글 삭제 */
-    @Transactional
-    public void delete(Long memberId, Long fosterId) {
-        Foster foster = fosterRepository.findByFosterIdAndUser_IdAndDeletedAtIsNull(memberId, fosterId)
-                .orElseThrow(() -> new FosterException(FosterErrorCode.FOSTER_NOT_FOUND));
+                return FosterUserDetailResponse.from(foster);
+        }
 
-        foster.softDelete();
-    }
+        /** 유저 글 삭제 */
+        @Transactional
+        public void delete(Long memberId, Long fosterId) {
+                Foster foster = fosterRepository.findByFosterIdAndUser_IdAndDeletedAtIsNull(fosterId, memberId)
+                                .orElseThrow(() -> new FosterException(FosterErrorCode.FOSTER_NOT_FOUND));
+
+                foster.softDelete();
+        }
 }

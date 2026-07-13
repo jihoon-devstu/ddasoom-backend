@@ -160,4 +160,45 @@ public class ImageService {
         // 재연결 시에도 updateOrder는 수행되므로, 재정렬된 리스트를 보내면 순서 변경이 이 호출만으로 처리됨
         attach(requestedIds, ownerType, ownerId);
     }
+
+    /**
+     * 소유자의 활성 이미지 목록을 URL 포함 응답으로 반환한다. (게시글 상세 조회 시 호출)
+     * image_order 오름차순 — 본문 삽입/저장 순서 그대로.
+     */
+    @Transactional(readOnly = true)
+    public List<ImageResponse> getImages(OwnerType ownerType, Long ownerId) {
+        return imageRepository
+                .findAllByOwnerTypeAndOwnerIdAndDeletedAtIsNullOrderByImageOrderAsc(ownerType, ownerId)
+                .stream()
+                .map(image -> ImageResponse.from(image, minioUtil.getUrl(ownerType, image.getImageKey())))
+                .toList();
+    }
+
+    /**
+     * 대표 이미지를 지정한다. (게시글 작성/수정 시 thumbnailImageId로 호출)
+     *
+     * <p>순서 고정: 검증 → 기존 해제 → 신규 지정.
+     * 검증을 먼저 두는 이유 — 대상이 유효하지 않으면 기존 대표를 건드리지 않고 즉시 실패해야
+     * (롤백에 기대지 않고) 상태 변경이 최소화된다.
+     *
+     * @throws ImageException IMAGE_004 — 없거나 삭제된 imageId
+     * @throws ImageException IMAGE_006 — 다른 소유자의 imageId
+     */
+    @Transactional
+    public void setThumbnail(Long imageId, OwnerType ownerType, Long ownerId) {
+        Image target = imageRepository.findById(imageId)
+                .orElseThrow(() -> new ImageException(ImageErrorCode.IMAGE_NOT_FOUND));
+
+        boolean isOwnerMismatch = target.getOwnerType() != ownerType
+                || !ownerId.equals(target.getOwnerId());
+        if (isOwnerMismatch) {
+            throw new ImageException(ImageErrorCode.IMAGE_OWNER_MISMATCH);
+        }
+
+        imageRepository.findByOwnerTypeAndOwnerIdAndIsThumbnailTrueAndDeletedAtIsNull(ownerType, ownerId)
+                .ifPresent(Image::unmarkAsThumbnail);
+
+        target.markAsThumbnail();
+    }
+
 }

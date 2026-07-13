@@ -1,5 +1,8 @@
 package com.paw.ddasoom.member.controller;
 
+import java.util.List;
+
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -9,15 +12,18 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.paw.ddasoom.auth.service.LoginService;
 import com.paw.ddasoom.auth.util.CookieUtil;
 import com.paw.ddasoom.common.dto.ApiResponse;
+import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.common.security.CustomUserDetails;
 import com.paw.ddasoom.member.dto.request.MemberUpdateRequest;
 import com.paw.ddasoom.member.dto.request.PasswordChangeRequest;
 import com.paw.ddasoom.member.dto.request.SocialExtraInfoRequest;
+import com.paw.ddasoom.member.dto.response.LoginLogResponse;
 import com.paw.ddasoom.member.dto.response.MemberResponse;
 import com.paw.ddasoom.member.service.MemberService;
 
@@ -50,6 +56,23 @@ public class MemberController {
           @AuthenticationPrincipal CustomUserDetails userDetails) {
       return ResponseEntity.ok(ApiResponse.success(memberService.getMyInfo(userDetails.getMemberId())));
   }
+  /** 내 로그인 이력 최근 5건 미리보기 */
+  @GetMapping("/me/login-logs/recent")
+  public ResponseEntity<ApiResponse<List<LoginLogResponse>>> getMyRecentLoginLogs(
+          @AuthenticationPrincipal CustomUserDetails userDetails) {
+      return ResponseEntity.ok(ApiResponse.success(memberService.getMyRecentLoginLogs(userDetails.getMemberId())));
+  }
+
+  /** 내 로그인 이력 전체 (페이징) */
+  @GetMapping("/me/login-logs")
+  public ResponseEntity<ApiResponse<PageResponse<LoginLogResponse>>> getMyLoginLogs(
+          @AuthenticationPrincipal CustomUserDetails userDetails,
+          @RequestParam(defaultValue = "0") int page,
+          @RequestParam(defaultValue = "20") int size) {
+      return ResponseEntity.ok(ApiResponse.success(
+              memberService.getMyLoginLogs(userDetails.getMemberId(), PageRequest.of(page, size))));
+  }
+
 
   /** 프로필(닉네임/전화번호) 수정 */
   @PatchMapping("/me")

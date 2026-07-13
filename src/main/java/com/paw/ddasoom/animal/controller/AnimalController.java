@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.paw.ddasoom.animal.domain.Animal;
 import com.paw.ddasoom.animal.dto.request.AnimalNicknameUpdateRequest;
-import com.paw.ddasoom.animal.dto.response.AnimalResponse;
+import com.paw.ddasoom.animal.dto.response.AnimalSyncResponse;
 import com.paw.ddasoom.animal.service.AnimalNicknameService;
 import com.paw.ddasoom.animal.service.AnimalSyncService;
 import com.paw.ddasoom.common.dto.ApiResponse;
@@ -35,10 +35,10 @@ public class AnimalController {
    * @return Httpstatus, message
    */
   @PostMapping("/sync")
-  public ResponseEntity<ApiResponse<List<AnimalResponse>>> syncAnimals() {
+  public ResponseEntity<ApiResponse<List<AnimalSyncResponse>>> syncAnimals() {
       List<Animal> savedAnimals = animalSyncService.syncAnimals();
-      List<AnimalResponse> response = savedAnimals.stream()
-              .map(AnimalResponse::from)
+      List<AnimalSyncResponse> response = savedAnimals.stream()
+              .map(AnimalSyncResponse::from)
               .toList();
 
       log.info("API 동물 {}건이 DB에 저장/갱신되었습니다.", savedAnimals.size());

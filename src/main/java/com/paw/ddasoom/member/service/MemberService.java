@@ -1,17 +1,25 @@
 package com.paw.ddasoom.member.service;
 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.paw.ddasoom.auth.domain.LoginLog;
 import com.paw.ddasoom.auth.exception.AuthErrorCode;
 import com.paw.ddasoom.auth.exception.AuthException;
+import com.paw.ddasoom.auth.repository.LoginLogRepository;
 import com.paw.ddasoom.auth.service.RedisTokenService;
+import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.member.domain.Member;
 import com.paw.ddasoom.member.domain.Role;
 import com.paw.ddasoom.member.dto.request.MemberUpdateRequest;
 import com.paw.ddasoom.member.dto.request.PasswordChangeRequest;
 import com.paw.ddasoom.member.dto.request.SocialExtraInfoRequest;
+import com.paw.ddasoom.member.dto.response.LoginLogResponse;
 import com.paw.ddasoom.member.dto.response.MemberResponse;
 import com.paw.ddasoom.member.exception.MemberErrorCode;
 import com.paw.ddasoom.member.exception.MemberException;
@@ -26,6 +34,7 @@ public class MemberService {
   private final MemberRepository memberRepository;
   private final RedisTokenService redisTokenService;
   private final PasswordEncoder passwordEncoder;
+  private final LoginLogRepository loginLogRepository;
 
 
   /**
@@ -62,6 +71,19 @@ public class MemberService {
       return MemberResponse.from(getMember(memberId));
   }
 
+  @Transactional(readOnly = true)
+  public List<LoginLogResponse> getMyRecentLoginLogs(Long memberId) {
+        return loginLogRepository.findTop5ByMemberIdOrderByCreatedAtDesc(memberId).stream()
+                .map(LoginLogResponse::from)
+                .toList();
+    }
+
+  @Transactional(readOnly = true)
+  public PageResponse<LoginLogResponse> getMyLoginLogs(Long memberId, Pageable pageable) {
+        Page<LoginLog> page = loginLogRepository.findByMemberIdOrderByCreatedAtDesc(memberId, pageable);
+        return PageResponse.of(page, LoginLogResponse::from);
+    }
+
   /** 프로필 수정 — 닉네임이 실제로 바뀌는 경우에만 중복 검사 (본인 닉네임 유지 제출 허용) */
   @Transactional
   public MemberResponse updateProfile(Long memberId, MemberUpdateRequest request) {
@@ -72,7 +94,7 @@ public class MemberService {
           throw new AuthException(AuthErrorCode.NICKNAME_ALREADY_EXISTS);
       }
 
-      member.updateProfile(request.getNickname(), request.getTel());
+      member.updateProfile(request.getName(), request.getNickname(), request.getTel());
       return MemberResponse.from(member);
   }
 

@@ -88,7 +88,8 @@ public class Member extends BaseTimeEntity{
   }
 
   // 리치도메인 메서드 -> 프로필(닉네임/전화번호) 수정
-  public void updateProfile(String nickname, String tel) {
+  public void updateProfile(String name, String nickname, String tel) {
+        this.name = name;
         this.nickname = nickname;
         this.tel = tel;
   }

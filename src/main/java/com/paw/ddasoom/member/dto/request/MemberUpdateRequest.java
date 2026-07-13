@@ -8,6 +8,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class MemberUpdateRequest {
+
+  @NotBlank(message = "이름은 필수입니다.")
+  @Pattern(regexp = "^[가-힣]+$|^[a-zA-Z\\s]+$", message = "이름은 한글 또는 영문만 입력할 수 있습니다.")
+  private String name;
+
   @NotBlank(message = "닉네임은 필수입니다.")
   @Pattern(regexp = "^[a-zA-Z0-9가-힣]{2,10}$", message = "닉네임은 2~10자의 한글, 영문, 숫자만 가능합니다.")
   private String nickname;

@@ -12,7 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,8 +30,13 @@ public class ImageService {
     private static final Set<String> ALLOWED_MIME_TYPES = Set.of(
             "image/jpeg", "image/png", "image/gif", "image/webp");
 
+    // 소유자당 최대 장수 — 게시글 UX 및 스토리지 관리 기준 (IMAGE_FLOW 3-3)
+    private static final int MAX_IMAGE_COUNT = 10;
+
     private final ImageRepository imageRepository;
     private final MinioUtil minioUtil;
+
+
 
     /**
      * 파일을 업로드하고 임시 상태(owner_id NULL)로 저장한다. 소유자 연결은 attach()에서.
@@ -78,5 +87,45 @@ public class ImageService {
             return "";   // 확장자 없음 → 화이트리스트에 없으니 자연히 INVALID_IMAGE_TYPE
         }
         return fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+    }
+
+    /**
+     * 업로드된 이미지들을 소유자에 확정 연결한다. (게시글/문의 생성 시 호출)
+     *
+     * <p>imageIds 리스트의 인덱스가 그대로 image_order로 저장된다 —
+     * 순서 변경은 재정렬된 리스트로 syncImages()를 재호출하면 된다 (별도 재정렬 API 없음, IMAGE_FLOW 3-6).
+     *
+     * @throws ImageException IMAGE_004 — 없거나 삭제된 imageId 포함
+     * @throws ImageException IMAGE_006 — 다른 소유자에 연결된 imageId 포함
+     * @throws ImageException IMAGE_003 — 연결 후 활성 이미지 10장 초과 (전체 롤백)
+     */
+    @Transactional
+    public void attach(List<Long> imageIds, OwnerType ownerType, Long ownerId) {
+        // 이미지 없는 게시글이 정상 경로 — 예외가 아니라 조기 종료
+        if (imageIds == null || imageIds.isEmpty()) {
+            return;
+        }
+
+        List<Image> images = imageRepository.findAllById(imageIds);
+        if (images.size() != imageIds.size()) {
+            throw new ImageException(ImageErrorCode.IMAGE_NOT_FOUND);
+        }
+
+        // findAllById는 순서 비보장 → Map 변환 후 "요청 리스트 순서"로 순회해야 image_order가 정확
+        Map<Long, Image> imageMap = images.stream()
+                .collect(Collectors.toMap(Image::getImageId, Function.identity()));
+
+        for (int i = 0; i < imageIds.size(); i++) {
+            Image image = imageMap.get(imageIds.get(i));
+            image.attachTo(ownerType, ownerId);   // 삭제/소유자 검증은 엔티티가 (IMAGE_004/006)
+            image.updateOrder(i);
+        }
+
+        // 장수 검증이 연결 "후"인 이유: 업로드 시점엔 소유자가 없어 소유자당 개수를 셀 수 없음.
+        // 초과 시 예외 → @Transactional 롤백으로 attachTo/updateOrder까지 전부 취소
+        long activeCount = imageRepository.countByOwnerTypeAndOwnerIdAndDeletedAtIsNull(ownerType, ownerId);
+        if (activeCount > MAX_IMAGE_COUNT) {
+            throw new ImageException(ImageErrorCode.IMAGE_COUNT_EXCEEDED);
+        }
     }
 }

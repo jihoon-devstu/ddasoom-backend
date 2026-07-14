@@ -61,13 +61,13 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<PostResponse> getPostList(BoardType boardType, String category, Pageable pageable) {
-        Page<PostListProjection> page = postRepository.findPostList(boardType, category, pageable);
+    public PageResponse<PostResponse> getPostList(String boardType, String category, Pageable pageable) {
+        BoardType parsedBoardType = parseBoardType(boardType);
+        Page<PostListProjection> page = postRepository.findPostList(parsedBoardType, category, pageable);
 
         List<Long> postIds = page.getContent().stream()
                 .map(PostListProjection::getPostId)
                 .toList();
-        // 썸네일 배치 조회 — 게시글 수와 무관하게 쿼리 1번 (N+1 방지)
         Map<Long, String> thumbnailUrls = imageService.getThumbnailUrls(OwnerType.POST, postIds);
 
         Page<PostResponse> mapped = page.map(projection ->
@@ -133,6 +133,16 @@ public class PostService {
         // ⚠️ Long은 == 비교 금지 (128 초과 시 항상 false) — equals 필수
         if (!post.getMember().getId().equals(memberId)) {
             throw new BoardException(BoardErrorCode.POST_ACCESS_DENIED);  // BOARD_002, 403
+        }
+    }
+
+    /** String → enum 변환 — 컨트롤러에서 BoardType으로 직접 바인딩하면 Spring 예외(500)가 먼저 터져
+     BOARD_003(400) 규격 응답이 불가능하므로, 변환 책임을 서비스가 가짐 */
+    private BoardType parseBoardType(String boardType) {
+        try {
+            return BoardType.valueOf(boardType);
+        } catch (IllegalArgumentException e) {
+            throw new BoardException(BoardErrorCode.INVALID_BOARD_TYPE);
         }
     }
 }

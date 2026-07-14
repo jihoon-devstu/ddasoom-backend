@@ -139,4 +139,27 @@ public class Foster extends BaseTimeEntity {
     this.message = message;
   }
 
+  // 리치도메인 메서드 -> 관리자 신청 처리 정보 수정 (검토자/답변/상태/임시보호 일정 변경)
+  public void updateAdminReview(
+    Member reviewer,
+    String answer,
+    FosterStatus status,
+    LocalDateTime fosterStartAt,
+    LocalDateTime fosterEndAt,
+    LocalDateTime fosterExtendAt,
+    LocalDateTime fosterCompleteAt
+  ){
+    if (this.deletedAt != null){
+      throw new FosterException(FosterErrorCode.ALREADY_DELETED_FOSTER);
+    }
+
+    this.reviewer = reviewer;
+    this.answer = answer;
+    this.status = status;
+    this.fosterStartAt = fosterStartAt;
+    this.fosterEndAt = fosterEndAt;
+    this.fosterExtendAt = fosterExtendAt;
+    this.fosterCompleteAt = fosterCompleteAt;
+  }
+
 }

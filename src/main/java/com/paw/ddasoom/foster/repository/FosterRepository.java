@@ -15,5 +15,7 @@ public interface FosterRepository extends JpaRepository<Foster, Long> {
 
   // 유저 리스트 조회 (유저의 신청 + 삭제되지않은 신청 + 최신 신청 정렬)
   Page<Foster> findAllByUser_IdAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId, Pageable pageable);
-
+  
+  // 관리자 리스트 조회(작성일순 정렬)
+  Page<Foster> findAllByOrderByCreatedAtDesc(Pageable pageable);
 }

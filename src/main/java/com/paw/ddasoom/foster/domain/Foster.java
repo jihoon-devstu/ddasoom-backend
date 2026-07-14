@@ -89,7 +89,7 @@ public class Foster extends BaseTimeEntity {
 
   @Column(columnDefinition = "DATETIME(6)")
   private LocalDateTime deletedAt;
-
+  // 임시보호신청 엔티티 초기화 - UUID 발급 및 기본 상태(PENDING) 설정
   private Foster(
       Animal animal,
       Member user,
@@ -104,7 +104,7 @@ public class Foster extends BaseTimeEntity {
     this.message = message;
     this.status = FosterStatus.PENDING;
   }
-
+  // 리치도메인 메서드 -> 임시보호 신청 생성 요청 (신청자/동물/신청 정보로 Foster 엔티티 생성)
   public static Foster create(
       Animal animal,
       Member user,
@@ -118,14 +118,14 @@ public class Foster extends BaseTimeEntity {
         job,
         message);
   }
-
+  // 리치도메인 메서드 -> 임시보호신청 soft delete 처리(deletedAt 기준 삭제)
   public void softDelete() {
     if(this.deletedAt != null){
       throw new FosterException(FosterErrorCode.ALREADY_DELETED_FOSTER);
     }
     this.deletedAt = LocalDateTime.now();
   }
-
+  // 리치도메인 메서드 -> 유저 신청 내용 수정 (PENDING 상태에서 age/job/message만 수정)
   public void updateUserRequest(String age, String job, String message) {
     if (this.deletedAt != null) {
       throw new FosterException(FosterErrorCode.ALREADY_DELETED_FOSTER);

@@ -1,16 +1,48 @@
 package com.paw.ddasoom.foster.controller;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.paw.ddasoom.common.dto.ApiResponse;
+import com.paw.ddasoom.common.dto.PageResponse;
+import com.paw.ddasoom.common.security.CustomUserDetails;
+import com.paw.ddasoom.foster.dto.response.FosterAdminDetailResponse;
+import com.paw.ddasoom.foster.dto.response.FosterAdminListResponse;
 import com.paw.ddasoom.foster.service.FosterAdminService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/admin/foster")
+@RequestMapping("/api/admin/fosters")
 public class FosterAdminController {
   private final FosterAdminService fosterAdminService;
+
+  /** 관리자 임시보호신청 조회(디테일) */
+  @GetMapping("/{fosterId}")
+  public ResponseEntity<ApiResponse<FosterAdminDetailResponse>> getFosterDetail(
+    @PathVariable Long fosterId){
+      FosterAdminDetailResponse response = fosterAdminService.getFosterDetail(fosterId);
+
+      return ResponseEntity.ok(ApiResponse.success(response));
+    }
+  /** 관리자 임시보호신청 조회(리스트) */
+  @GetMapping
+  public ResponseEntity<ApiResponse<PageResponse<FosterAdminListResponse>>> getFosterList(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size
+  ){
+    PageResponse<FosterAdminListResponse> response = fosterAdminService.getFosterList(PageRequest.of(page, size));
+
+    return ResponseEntity.ok(ApiResponse.success(response));
+  }
+  
+
 
 }

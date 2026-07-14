@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.paw.ddasoom.common.dto.ApiResponse;
 import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.common.security.CustomUserDetails;
+import com.paw.ddasoom.foster.domain.FosterStatus;
 import com.paw.ddasoom.foster.dto.request.FosterCreateRequest;
 import com.paw.ddasoom.foster.dto.request.FosterUpdateRequest;
 import com.paw.ddasoom.foster.dto.response.FosterUserDetailResponse;
@@ -60,10 +61,13 @@ public class FosterController {
   @GetMapping("/my")
   public ResponseEntity<ApiResponse<PageResponse<FosterUserListResponse>>> getFosterList(
       @AuthenticationPrincipal CustomUserDetails userDetails,
+      @RequestParam(required = false) FosterStatus status,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
-    PageResponse<FosterUserListResponse> response = fosterService.getFosterList(userDetails.getMemberId(),
-        PageRequest.of(page, size));
+    PageResponse<FosterUserListResponse> response = fosterService.getFosterList(
+      userDetails.getMemberId(),
+      status,
+      PageRequest.of(page, size));
 
     return ResponseEntity.ok(ApiResponse.success(response));
   }

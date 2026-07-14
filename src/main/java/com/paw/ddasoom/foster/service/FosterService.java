@@ -11,6 +11,7 @@ import com.paw.ddasoom.animal.exception.AnimalException;
 import com.paw.ddasoom.animal.repository.AnimalRepository;
 import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.foster.domain.Foster;
+import com.paw.ddasoom.foster.domain.FosterStatus;
 import com.paw.ddasoom.foster.dto.request.FosterCreateRequest;
 import com.paw.ddasoom.foster.dto.request.FosterUpdateRequest;
 import com.paw.ddasoom.foster.dto.response.FosterUserDetailResponse;
@@ -69,9 +70,11 @@ public class FosterService {
 
         /** 유저 글 조회(리스트) */
         @Transactional(readOnly = true)
-        public PageResponse<FosterUserListResponse> getFosterList(Long memberId, Pageable pageable) {
-                Page<Foster> fosterPage = fosterRepository
-                                .findAllByUser_IdAndDeletedAtIsNullOrderByCreatedAtDesc(memberId, pageable);
+        public PageResponse<FosterUserListResponse> getFosterList(
+                Long memberId,
+                FosterStatus status,
+                Pageable pageable) {
+                Page<Foster> fosterPage = fosterRepository.findAlForUser(memberId, status, pageable);
 
                 return PageResponse.of(fosterPage, FosterUserListResponse::from);
         }

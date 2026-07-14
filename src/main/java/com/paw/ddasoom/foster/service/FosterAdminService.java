@@ -29,7 +29,7 @@ public class FosterAdminService {
 
   private final FosterRepository fosterRepository;
   private final MemberRepository memberRepository;
-  //임시보호가 진행 중인 상태를 판단하는 목록
+  /** 임시보호가 진행 중인 상태를 판단하는 목록 */
   private static final List<FosterStatus> ACTIVE_FOSTER_STATUSES = List.of(
     FosterStatus.FOSTERING, // 임시보호중
     FosterStatus.EXTENDED   // 임시보호연장
@@ -45,8 +45,11 @@ public class FosterAdminService {
   }
   /** 관리자 임시보호신청 조회(리스트) */
   @Transactional(readOnly = true)
-  public PageResponse<FosterAdminListResponse> getFosterList(Pageable pageable){
-    Page<Foster> fosterList = fosterRepository.findAllByOrderByCreatedAtDesc(pageable);
+  public PageResponse<FosterAdminListResponse> getFosterList(
+    FosterStatus status,
+    boolean includeDeleted,
+    Pageable pageable){
+    Page<Foster> fosterList = fosterRepository.findAllForAdmin(status, includeDeleted, pageable);
 
     return PageResponse.of(fosterList, FosterAdminListResponse::from);
   }
@@ -70,7 +73,7 @@ public class FosterAdminService {
     
         syncAnimalFosterStatus(foster);
   }
-  // 업데이트시 상태값에 따른 animal 데이터 임시보호 여부 변경
+  /** 업데이트시 상태값에 따른 animal 데이터 임시보호 여부 변경 */
   private void syncAnimalFosterStatus(Foster foster){
     // 현재 animalId를 가져와 임시보호중인지 연장중인지 확인
     boolean isFostered = fosterRepository.existsByAnimal_IdAndStatusInAndDeletedAtIsNull(

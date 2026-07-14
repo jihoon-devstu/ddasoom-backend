@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.paw.ddasoom.common.dto.ApiResponse;
 import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.common.security.CustomUserDetails;
+import com.paw.ddasoom.foster.domain.FosterStatus;
 import com.paw.ddasoom.foster.dto.request.FosterAdminUpdateRequest;
 import com.paw.ddasoom.foster.dto.response.FosterAdminDetailResponse;
 import com.paw.ddasoom.foster.dto.response.FosterAdminListResponse;
@@ -39,10 +40,15 @@ public class FosterAdminController {
   /** 관리자 임시보호신청 조회(리스트) */
   @GetMapping
   public ResponseEntity<ApiResponse<PageResponse<FosterAdminListResponse>>> getFosterList(
+      @RequestParam(required = false) FosterStatus status,
+      @RequestParam(defaultValue = "false") boolean includeDeleted,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size
   ){
-    PageResponse<FosterAdminListResponse> response = fosterAdminService.getFosterList(PageRequest.of(page, size));
+    PageResponse<FosterAdminListResponse> response = fosterAdminService.getFosterList(
+      status,
+      includeDeleted,
+      PageRequest.of(page, size));
 
     return ResponseEntity.ok(ApiResponse.success(response));
   }

@@ -97,9 +97,6 @@ public class Animal extends BaseTimeEntity {
   @Column(name = "rescued_at", columnDefinition = "DATETIME(6)")
   private LocalDateTime rescuedAt; // 서비스 로직에서 명시적 세팅, 자동화 금지
 
-  @Column(name = "deleted_at")
-  private LocalDateTime deletedAt;
-
   public void increaseLikeCount() {
     this.likeCount++;
   }

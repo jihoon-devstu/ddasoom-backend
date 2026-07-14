@@ -60,10 +60,6 @@ public class AnimalLikeSyncBatch {
     
     try {
       doFlush(toInsert, toDelete, affectedAnimalIds);
-
-      // 처리한 필드만 제거 (처리 중 새로 들어온 것 보존)
-      redisTemplate.opsForHash().delete(DIRTY_KEY,
-      dirty.keySet().toArray());
     } catch (AnimalException e) {
       log.error("좋아요 배치 반영 실패, 다음 주기에 재시도합니다.", e);
     }

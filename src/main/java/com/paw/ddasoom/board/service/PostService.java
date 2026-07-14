@@ -35,9 +35,14 @@ public class PostService {
      * 카테고리 화이트리스트 — 프론트 select 제약은 신뢰 대상이 아니므로 서버에서 재검증.
      * 생성/수정 시에만 엄격 검증. 목록 조회 필터는 검증하지 않음 (미존재 값 → 자연히 빈 결과).
      */
+    private static final Set<String> ADOPTION_REVIEW_CATEGORIES = Set.of("강아지", "고양이");
+    private static final Set<String> DOG_INFO_CATEGORIES = Set.of("예방접종");
+    private static final Set<String> CAT_INFO_CATEGORIES = Set.of("예방접종");
+
     private static final Map<BoardType, Set<String>> CATEGORY_WHITELIST = Map.of(
-            BoardType.ADOPTION_REVIEW, Set.of("강아지", "고양이"),
-            BoardType.PET_INFO, Set.of("강아지", "고양이", "예방접종")
+            BoardType.ADOPTION_REVIEW, ADOPTION_REVIEW_CATEGORIES,
+            BoardType.DOG_INFO, DOG_INFO_CATEGORIES,
+            BoardType.CAT_INFO, CAT_INFO_CATEGORIES
     );
 
     private final PostRepository postRepository;

@@ -1,6 +1,7 @@
 package com.paw.ddasoom.support.dto.response;
 
 import com.paw.ddasoom.support.domain.Faq;
+import com.paw.ddasoom.support.domain.FaqCategory;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import lombok.Getter;
 public class FaqSummaryResponse {
 
   private Long faqId;
-  private String category;
+  private FaqCategory category;
   private String question;
   private Boolean isVisible;
 

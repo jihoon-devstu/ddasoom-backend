@@ -3,6 +3,7 @@ package com.paw.ddasoom.support.dto.response;
 import java.time.LocalDateTime;
 
 import com.paw.ddasoom.support.domain.Faq;
+import com.paw.ddasoom.support.domain.FaqCategory;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -12,7 +13,7 @@ import lombok.Getter;
 public class FaqResponse {
 
   private Long faqId;
-  private String category;
+  private FaqCategory category;
   private String question;
   private String answer;
   private Boolean isVisible;

@@ -5,7 +5,6 @@ import com.paw.ddasoom.board.domain.Post;
 import com.paw.ddasoom.board.dto.projection.PostListProjection;
 import com.paw.ddasoom.board.dto.request.PostCreateRequest;
 import com.paw.ddasoom.board.dto.request.PostUpdateRequest;
-import com.paw.ddasoom.board.dto.response.PageResponse;
 import com.paw.ddasoom.board.dto.response.PostDetailResponse;
 import com.paw.ddasoom.board.dto.response.PostResponse;
 import com.paw.ddasoom.board.exception.BoardErrorCode;
@@ -18,6 +17,7 @@ import com.paw.ddasoom.member.domain.Member;
 import com.paw.ddasoom.member.exception.MemberErrorCode;
 import com.paw.ddasoom.member.exception.MemberException;
 import com.paw.ddasoom.member.repository.MemberRepository;
+import com.paw.ddasoom.common.dto.PageResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,9 +75,8 @@ public class PostService {
                 .toList();
         Map<Long, String> thumbnailUrls = imageService.getThumbnailUrls(OwnerType.POST, postIds);
 
-        Page<PostResponse> mapped = page.map(projection ->
+        return PageResponse.of(page, projection ->
                 PostResponse.from(projection, thumbnailUrls.get(projection.getPostId())));
-        return PageResponse.from(mapped);
     }
 
     @Transactional  // readOnly 아님 — 조회수 증가(쓰기) 포함

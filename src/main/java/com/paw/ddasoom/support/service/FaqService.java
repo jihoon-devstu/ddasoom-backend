@@ -26,7 +26,7 @@ public class FaqService {
   
   private final FaqRepository faqRepository;
   
-  // ====== 1. 유저용(조회) ========
+// ====== 1. 유저용(조회) ========
 
   // 1) 전체 FAQ 목록 조회
   @Transactional(readOnly = true)
@@ -48,7 +48,7 @@ public class FaqService {
     return FaqResponse.from(faq);
   }
 
-  // ====== 2. 관리자용(CURD) ========
+// ====== 2. 관리자용(CURD) ========
 
   // 1) FAQ 전체 목록 조회 (비노출 포함)
   @Transactional (readOnly = true)
@@ -64,7 +64,7 @@ public class FaqService {
     return FaqResponse.from(getFaqEntity(faqId));
   }
 
-  // 3) 새로운 FAQ 둥록
+  // 3) 새로운 FAQ 등록
   @Transactional
   public FaqResponse createFaq(FaqCreateRequest request) {
     Faq faq = Faq.builder()
@@ -72,30 +72,39 @@ public class FaqService {
       .question(request.getQuestion())
       .answer(request.getAnswer())
       .build();
-    return FaqResponse.from(faqRepository.save(faq));
+    Faq savedFaq = faqRepository.save(faq);
+    return FaqResponse.from(savedFaq);
   }
 
+  // 4) FAQ 수정
   @Transactional
   public FaqResponse updateFaq(Long faqId, FaqUpdateRequest request) {
     Faq faq = getFaqEntity(faqId);
     faq.update(request.getCategory(), request.getQuestion(), request.getAnswer());
+    faqRepository.flush();
     return FaqResponse.from(faq);
   }
 
+  /**
+  * 5) FAQ 노출 여부 변경
+  * @param isVisible 사용자가 FAQ를 볼 수 있게 할지 여부 (true: 노출, false: 숨김)
+  */
   @Transactional
   public void changeVisibility(Long faqId, boolean isVisible) {
     Faq faq = getFaqEntity(faqId);
     faq.changeVisibility(isVisible);
   }
 
+  // 6) FAQ 삭제 (논리 삭제)
   @Transactional
   public void deleteFaq(Long faqId) {
     Faq faq = getFaqEntity(faqId);
     faq.softDelete();
   }
 
-  // ====== 3. 내부 조회 ========
+// ====== 3. 내부 조회 ========
 
+  // 1) Faq 단건 조회 공통 내부 메서드 (논리삭제X 데이터만 조회)
   private Faq getFaqEntity(Long faqId) {
     return faqRepository.findByIdAndDeletedAtIsNull(faqId)
       .orElseThrow(() -> new SupportException(SupportErrorCode.FAQ_NOT_FOUND));

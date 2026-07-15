@@ -62,11 +62,11 @@ public class AnimalLikeSyncBatch {
     
     try {
       doFlush(toInsert, toDelete, affectedAnimalIds);
+      redisTemplate.delete(SNAPSHOT_KEY);   // DB 반영 성공 후에만 스냅샷 통째 삭제
     } catch (AnimalException e) {
       log.error("좋아요 배치 반영 실패, 다음 주기에 재시도합니다.", e);
     }
 
-    redisTemplate.delete(SNAPSHOT_KEY);   // DB 반영 성공 후에만 스냅샷 통째 삭제
   }
 
   public void doFlush(

@@ -28,6 +28,7 @@ public class AnimalRepositoryImpl implements AnimalRepositoryCustom {
   @Override
   public Page<Animal> search(AnimalListPageRequest request, Pageable pageable) {
     
+    // 쿼리문의 조건(WHERE)을 한번에 처리함
     List<Animal> animals = queryFactory
       .selectFrom(animal)
       .where(

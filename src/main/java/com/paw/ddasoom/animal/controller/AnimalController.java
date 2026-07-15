@@ -66,6 +66,7 @@ public class AnimalController {
       @PathVariable Long animalId,
       @Valid @RequestBody AnimalNicknameUpdateRequest request) {
     animalNicknameService.updateNickname(animalId, request.nickname());
+    log.info("닉네임 이름이 변경되었습니다: {}", request.nickname());
     return ResponseEntity.ok(ApiResponse.success("유기동물 이름이 변경되었습니다."));
   }
 
@@ -81,6 +82,7 @@ public class AnimalController {
     @PathVariable Long animalId,
     @AuthenticationPrincipal CustomUserDetails userDetails) {
     animalLikeService.like(animalId, userDetails.getMemberId());
+    log.info("좋아요가 반영되었습니다. 동물ID: {}, 유저ID: {}", animalId, userDetails.getMemberId());
     return ResponseEntity.ok(ApiResponse.success("좋아요가 반영되었습니다."));
   }
 
@@ -95,6 +97,7 @@ public class AnimalController {
     @PathVariable Long animalId,
     @AuthenticationPrincipal CustomUserDetails userDetails) {
     animalLikeService.unlike(animalId, userDetails.getMemberId());
+    log.info("좋아요가 취소되었습니다. 동물ID: {}, 유저ID: {}", animalId, userDetails.getMemberId());
     return ResponseEntity.ok(ApiResponse.success("좋아요가 취소되었습니다."));
   }
 
@@ -113,6 +116,7 @@ public class AnimalController {
     @RequestParam(name = "page", defaultValue = "0") int page,
     @RequestParam(name = "size", defaultValue = "10") int size
   ) {
+    // requrest params가 많아서 dto로 담아서 보냄
     AnimalListPageRequest request = AnimalListPageRequest.builder()
       .kind(kind)
       .location(location)

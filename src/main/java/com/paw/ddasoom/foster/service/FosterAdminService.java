@@ -100,7 +100,7 @@ public class FosterAdminService {
   
     syncAnimalFosterStatus(foster);
   }
-  /** 업데이트시 상태값에 따른 animal 데이터 임시보호 여부 변경 */
+  /** 관리자 수정 후 상태값에 따른 animal 데이터 임시보호 여부 변경 */
   private void syncAnimalFosterStatus(Foster foster){
     // 현재 animalId를 가져와 임시보호중인지 연장중인지 확인
     boolean isFostered = fosterRepository.existsByAnimal_IdAndStatusInAndDeletedAtIsNull(

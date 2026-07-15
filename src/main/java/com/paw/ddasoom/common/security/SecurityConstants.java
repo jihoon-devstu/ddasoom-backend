@@ -24,10 +24,6 @@ public class SecurityConstants {
       "/api/{animalId}/nickname",     // 유기동물 닉네임 수정 (테스트용)
       "/api/animals/sync",            // 유기동물 DB에 저장 (테스트용)
       "/api/animals/**",               // 좋아요, 좋아요 취소, 좋아요 수 업데이트 (테스트용)
-                 // ── auth (임시보호신청 포스트맨 테스트 ── 경우)
-      "/api/admin/fosters",
-      "/api/admin/fosters/*",
-      "/api/fosters",
-      "/api/fosters/*",
+
   };
 }

@@ -40,7 +40,7 @@ public class FosterController {
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @Valid @RequestBody FosterCreateRequest request) {
     fosterService.create(userDetails.getMemberId(), request);
-
+    
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(ApiResponse.success("임시보호 신청이 완료되었습니다."));
   }
@@ -48,13 +48,11 @@ public class FosterController {
   /** 유저 임시보호신청 수정 */
   @PatchMapping("/{fosterId}")
   public ResponseEntity<ApiResponse<Void>> update(
-      //@AuthenticationPrincipal CustomUserDetails userDetails,
-      @PathVariable Long memberId,
+      @AuthenticationPrincipal CustomUserDetails userDetails,
       @PathVariable Long fosterId,
       @Valid @RequestBody FosterUpdateRequest request) {
 
-    //fosterService.update(userDetails.getMemberId(), fosterId, request);
-    fosterService.update(memberId, fosterId, request);
+    fosterService.update(userDetails.getMemberId(), fosterId, request);
 
     return ResponseEntity.ok(ApiResponse.success("임시보호 신청이 수정되었습니다."));
   }
@@ -62,14 +60,12 @@ public class FosterController {
   /** 유저 임시보호신청 조회(리스트) */
   @GetMapping("/my")
   public ResponseEntity<ApiResponse<PageResponse<FosterUserListResponse>>> getFosterList(
-      //@AuthenticationPrincipal CustomUserDetails userDetails,
-      @RequestParam Long memberId,
+      @AuthenticationPrincipal CustomUserDetails userDetails,
       @RequestParam(required = false) FosterStatus status,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
     PageResponse<FosterUserListResponse> response = fosterService.getFosterList(
-      //userDetails.getMemberId(),
-      memberId,
+      userDetails.getMemberId(),
       status,
       PageRequest.of(page, size));
 

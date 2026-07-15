@@ -31,10 +31,17 @@ public interface FosterRepository extends JpaRepository<Foster, Long> {
         and (:status is null or f.status = :status)
       order by f.createdAt desc
       """)
-  Page<Foster> findAlForUser(
+  Page<Foster> findAllForUser(
     @Param("memberId") Long memberId,
     @Param("status") FosterStatus status,
     Pageable pageable
+  );
+
+  /** 같은 유저가 같은 동물에 대해 삭제되지 않고, 거절 상태가 아닌 신청이 있는지 확인 */
+  boolean existsByUser_IdAndAnimal_IdAndDeletedAtIsNullAndStatusNot(
+    Long userId,
+    Long animalId,
+    FosterStatus status
   );
 
   /** 관리자 리스트 조회(상태값/임시보호중/삭제/기간 필터링, 신청일 정렬)
@@ -46,9 +53,9 @@ public interface FosterRepository extends JpaRepository<Foster, Long> {
    * includeDeleted = false //softDelete 미포함 조회
    * startAt/endAt // createdAt 기간 조회
    * 
-   * 주의)
-   * status와 activeOnly=true를 동시에 보내면 조건이 둘 다 적용.
-   * 프론트에서 둘을 동시에 보내지 않게 하거나 서비스에서 막는 게 좋습니다. 
+   * 참고)
+   * status와 activeOnly=true를 동시에 보내면 둘다 적용
+   * 서비스에서 INVALID_FOSTER_SEARCH_CONDITION 예외 처리
    */
   @Query("""
       select f

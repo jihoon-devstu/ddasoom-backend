@@ -43,6 +43,9 @@ public class FosterService {
 
                 Member user = memberRepository.findById(memberId)
                                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+                
+                // 동일 유저 동일 동물 중복신청 검증
+                validateDuplicateApplication(memberId, request.getAnimalId());
 
                 Foster foster = Foster.create(
                                 animal,
@@ -53,6 +56,17 @@ public class FosterService {
 
                 fosterRepository.save(foster);
 
+        }
+        private void validateDuplicateApplication(Long memberId, Long animalId){
+                boolean existsActiveApplication = fosterRepository
+                        .existsByUser_IdAndAnimal_IdAndDeletedAtIsNullAndStatusNot(
+                        memberId,
+                        animalId,
+                        FosterStatus.REJECTED
+                );
+                if (existsActiveApplication) {
+                        throw new FosterException(FosterErrorCode.DUPLICATE_FOSTER_APPLICATION);
+                }
         }
 
         /** 유저 글 수정 */
@@ -74,7 +88,7 @@ public class FosterService {
                 Long memberId,
                 FosterStatus status,
                 Pageable pageable) {
-                Page<Foster> fosterPage = fosterRepository.findAlForUser(memberId, status, pageable);
+                Page<Foster> fosterPage = fosterRepository.findAllForUser(memberId, status, pageable);
 
                 return PageResponse.of(fosterPage, FosterUserListResponse::from);
         }

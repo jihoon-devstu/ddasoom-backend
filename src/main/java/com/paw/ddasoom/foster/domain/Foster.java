@@ -163,9 +163,9 @@ public class Foster extends BaseTimeEntity {
     this.fosterExtendAt = fosterExtendAt;
     this.fosterCompleteAt = fosterCompleteAt;
   }
-  // 임시보호상태 변경시 서비스적으로 변경이 불가능한 상태 보호 메서드(updateAdminReview 에서 검증)
+  // 리치도메인 -> 임시보호상태 변경시 서비스적으로 변경이 불가능한 상태 보호 메서드(updateAdminReview 에서 검증)
   private void validateStatusTransition(FosterStatus nextStatus){
-    // 동일한 상태 처리
+    // 업데이트시 동일한 상태일시 처리 (PENDING == PENDING)
     if (this.status == nextStatus) {
       return;
     }

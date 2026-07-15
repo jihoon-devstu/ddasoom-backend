@@ -15,6 +15,7 @@ import com.paw.ddasoom.member.domain.Member;
 import com.paw.ddasoom.member.exception.MemberErrorCode;
 import com.paw.ddasoom.member.exception.MemberException;
 import com.paw.ddasoom.member.repository.MemberRepository;
+import com.paw.ddasoom.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,11 +30,12 @@ public class PostCommentService {
     private final PostCommentRepository postCommentRepository;
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
+    private final MemberService memberService;
 
     @Transactional
     public CommentResponse create(Long postId, Long memberId, CommentCreateRequest request) {
         Post post = getActivePost(postId);
-        Member member = getMember(memberId);
+        Member member = memberService.getMember(memberId);
 
         PostComment comment = PostComment.builder()
                 .post(post)
@@ -84,10 +86,6 @@ public class PostCommentService {
                 .orElseThrow(() -> new BoardException(BoardErrorCode.POST_NOT_FOUND));
     }
 
-    private Member getMember(Long memberId) {
-        return memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
-    }
 
     private PostComment getActiveComment(Long commentId, Long postId) {
         return postCommentRepository.findByIdAndPostIdAndDeletedAtIsNull(commentId, postId)

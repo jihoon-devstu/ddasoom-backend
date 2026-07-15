@@ -7,9 +7,9 @@ import com.paw.ddasoom.foster.service.FosterAdminService;
 
 import lombok.RequiredArgsConstructor;
 
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin/foster")
 public class FosterAdminController {
-  private final FosterAdminService fosterAdminService;
 
 }

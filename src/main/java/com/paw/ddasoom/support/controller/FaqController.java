@@ -1,5 +1,6 @@
 package com.paw.ddasoom.support.controller;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -9,11 +10,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.paw.ddasoom.common.dto.ApiResponse;
+import com.paw.ddasoom.support.domain.FaqCategory;
+import com.paw.ddasoom.support.dto.response.FaqCategoryResponse;
 import com.paw.ddasoom.support.dto.response.FaqResponse;
 import com.paw.ddasoom.support.dto.response.FaqSummaryResponse;
 import com.paw.ddasoom.support.service.FaqService;
 
 import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequestMapping("/api/faqs")
@@ -21,6 +25,12 @@ import lombok.RequiredArgsConstructor;
 public class FaqController {
 
   private final FaqService faqService;
+
+  // 서버 기동 시 1회 생성, 재사용
+  private static final List<FaqCategoryResponse> CACHED_CATEGORIES =
+      Arrays.stream(FaqCategory.values())
+        .map(FaqCategoryResponse::from)
+        .toList();
 
   // 1. 사용자용 FAQ 목록 조회
   @GetMapping
@@ -33,5 +43,10 @@ public class FaqController {
   public ResponseEntity<ApiResponse<FaqResponse>> getFaq(@PathVariable Long faqId) {
     return ResponseEntity.ok(ApiResponse.success(faqService.getFaq(faqId)));
   }
-  
+
+  // 3. FAQ 카테고리 목록 조회 (캐시된 리스트 반환)
+  @GetMapping("/categories")
+  public ResponseEntity<ApiResponse<List<FaqCategoryResponse>>> getFaqCategories() {
+      return ResponseEntity.ok(ApiResponse.success(CACHED_CATEGORIES));
+  }
 }

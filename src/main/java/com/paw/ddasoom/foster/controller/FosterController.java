@@ -48,11 +48,13 @@ public class FosterController {
   /** 유저 임시보호신청 수정 */
   @PatchMapping("/{fosterId}")
   public ResponseEntity<ApiResponse<Void>> update(
-      @AuthenticationPrincipal CustomUserDetails userDetails,
+      //@AuthenticationPrincipal CustomUserDetails userDetails,
+      @PathVariable Long memberId,
       @PathVariable Long fosterId,
       @Valid @RequestBody FosterUpdateRequest request) {
 
-    fosterService.update(userDetails.getMemberId(), fosterId, request);
+    //fosterService.update(userDetails.getMemberId(), fosterId, request);
+    fosterService.update(memberId, fosterId, request);
 
     return ResponseEntity.ok(ApiResponse.success("임시보호 신청이 수정되었습니다."));
   }

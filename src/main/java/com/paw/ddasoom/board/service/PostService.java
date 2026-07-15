@@ -5,7 +5,6 @@ import com.paw.ddasoom.board.domain.Post;
 import com.paw.ddasoom.board.dto.projection.PostListProjection;
 import com.paw.ddasoom.board.dto.request.PostCreateRequest;
 import com.paw.ddasoom.board.dto.request.PostUpdateRequest;
-import com.paw.ddasoom.board.dto.response.PageResponse;
 import com.paw.ddasoom.board.dto.response.PostDetailResponse;
 import com.paw.ddasoom.board.dto.response.PostResponse;
 import com.paw.ddasoom.board.exception.BoardErrorCode;
@@ -18,6 +17,7 @@ import com.paw.ddasoom.member.domain.Member;
 import com.paw.ddasoom.member.exception.MemberErrorCode;
 import com.paw.ddasoom.member.exception.MemberException;
 import com.paw.ddasoom.member.repository.MemberRepository;
+import com.paw.ddasoom.common.dto.PageResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,9 +35,14 @@ public class PostService {
      * 카테고리 화이트리스트 — 프론트 select 제약은 신뢰 대상이 아니므로 서버에서 재검증.
      * 생성/수정 시에만 엄격 검증. 목록 조회 필터는 검증하지 않음 (미존재 값 → 자연히 빈 결과).
      */
+    private static final Set<String> ADOPTION_REVIEW_CATEGORIES = Set.of("강아지", "고양이");
+    private static final Set<String> DOG_INFO_CATEGORIES = Set.of("예방접종");
+    private static final Set<String> CAT_INFO_CATEGORIES = Set.of("예방접종");
+
     private static final Map<BoardType, Set<String>> CATEGORY_WHITELIST = Map.of(
-            BoardType.ADOPTION_REVIEW, Set.of("강아지", "고양이"),
-            BoardType.PET_INFO, Set.of("강아지", "고양이", "예방접종")
+            BoardType.ADOPTION_REVIEW, ADOPTION_REVIEW_CATEGORIES,
+            BoardType.DOG_INFO, DOG_INFO_CATEGORIES,
+            BoardType.CAT_INFO, CAT_INFO_CATEGORIES
     );
 
     private final PostRepository postRepository;
@@ -46,13 +51,13 @@ public class PostService {
 
     @Transactional
     public Long createPost(Long memberId, PostCreateRequest request) {
-        validateCategory(request.getBoardType(), request.getCategory());
+        BoardType boardType = parseBoardType(request.getBoardType());
+        validateCategory(boardType, request.getCategory());
         Member member = getMember(memberId);
 
-        Post post = request.toEntity(member);
+        Post post = request.toEntity(member, boardType);
         postRepository.save(post);
 
-        // 하이브리드 업로드 확정 연결 — attach(순서 확정) → setThumbnail 순 (IMAGE_FLOW 3-6)
         imageService.attach(request.getImageIds(), OwnerType.POST, post.getId());
         if (request.getThumbnailImageId() != null) {
             imageService.setThumbnail(request.getThumbnailImageId(), OwnerType.POST, post.getId());
@@ -70,9 +75,8 @@ public class PostService {
                 .toList();
         Map<Long, String> thumbnailUrls = imageService.getThumbnailUrls(OwnerType.POST, postIds);
 
-        Page<PostResponse> mapped = page.map(projection ->
+        return PageResponse.of(page, projection ->
                 PostResponse.from(projection, thumbnailUrls.get(projection.getPostId())));
-        return PageResponse.from(mapped);
     }
 
     @Transactional  // readOnly 아님 — 조회수 증가(쓰기) 포함
@@ -86,11 +90,12 @@ public class PostService {
 
     @Transactional
     public void updatePost(Long memberId, Long postId, PostUpdateRequest request) {
-        validateCategory(request.getBoardType(), request.getCategory());
+        BoardType boardType = parseBoardType(request.getBoardType());
+        validateCategory(boardType, request.getCategory());
         Post post = getPost(postId);
         validateAuthor(post, memberId);
 
-        post.update(request.getBoardType(), request.getCategory(),
+        post.update(boardType, request.getCategory(),
                 request.getTitle(), request.getContent());
 
         // 수정은 diff 동기화 — 빠진 이미지 soft delete + 순서 갱신 (IMAGE_FLOW 3-6)

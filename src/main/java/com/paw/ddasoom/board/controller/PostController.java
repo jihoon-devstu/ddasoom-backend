@@ -2,11 +2,11 @@ package com.paw.ddasoom.board.controller;
 
 import com.paw.ddasoom.board.dto.request.PostCreateRequest;
 import com.paw.ddasoom.board.dto.request.PostUpdateRequest;
-import com.paw.ddasoom.board.dto.response.PageResponse;
 import com.paw.ddasoom.board.dto.response.PostDetailResponse;
 import com.paw.ddasoom.board.dto.response.PostResponse;
 import com.paw.ddasoom.board.service.PostService;
 import com.paw.ddasoom.common.dto.ApiResponse;
+import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.common.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;

@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PostCreateRequest {
 
-    private BoardType boardType;
+    private String boardType;
     private String category;
     private String title;
     private String content;
@@ -22,7 +22,7 @@ public class PostCreateRequest {
     /** 대표 이미지 명시 지정 (사용자 직접 선택) — 미지정 시 null */
     private Long thumbnailImageId;
 
-    public Post toEntity(Member member) {
+    public Post toEntity(Member member, BoardType boardType) {
         return Post.builder()
                 .member(member)
                 .boardType(boardType)

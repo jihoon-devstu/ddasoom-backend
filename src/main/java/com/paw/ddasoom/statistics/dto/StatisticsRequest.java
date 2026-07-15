@@ -1,5 +1,5 @@
 package com.paw.ddasoom.statistics.dto;
 
-public class Request {
+public class StatisticsRequest {
 
 }

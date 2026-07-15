@@ -1,5 +1,5 @@
 package com.paw.ddasoom.dashboard.dto;
 
-public class Request {
+public class DashboardRequest {
   
 }

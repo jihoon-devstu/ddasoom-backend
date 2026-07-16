@@ -17,6 +17,7 @@ import com.paw.ddasoom.animal.dto.response.AnimalMyPageResponse;
 import com.paw.ddasoom.animal.exception.AnimalErrorCode;
 import com.paw.ddasoom.animal.exception.AnimalException;
 import com.paw.ddasoom.animal.repository.AnimalLikeRepository;
+import com.paw.ddasoom.animal.repository.AnimalQueryRepository;
 import com.paw.ddasoom.animal.repository.AnimalRepository;
 import com.paw.ddasoom.common.dto.PageResponse;
 
@@ -33,13 +34,14 @@ import lombok.RequiredArgsConstructor;
 public class AnimalQueryService {
 
   private final AnimalRepository animalRepository;
+  private final AnimalQueryRepository animalQueryRepository;
   private final AnimalLikeRepository animalLikeRepository;
 
   // 목록 (동적 검색 + 페이징). memberId 있으면 이번 페이지의 isLiked를 배치 조회로 채운다.
   public PageResponse<AnimalListPageResponse> search(
     AnimalListPageRequest request, Long memberId, Pageable pageable) {
 
-    Page<Animal> page = animalRepository.search(request, memberId, pageable);
+    Page<Animal> page = animalQueryRepository.search(request, memberId, pageable);
 
     // 이번 페이지 동물들 중 내가 좋아요한 id 집합을 한 번에 조회(비로그인이면 빈 집합)
     Set<Long> likedIds = resolveLikedIds(page.getContent(), memberId);

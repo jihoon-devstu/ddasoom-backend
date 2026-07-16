@@ -7,10 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,19 +16,16 @@ import org.springframework.web.bind.annotation.RestController;
 import com.paw.ddasoom.animal.domain.AnimalGender;
 import com.paw.ddasoom.animal.domain.AnimalKind;
 import com.paw.ddasoom.animal.dto.request.AnimalListPageRequest;
-import com.paw.ddasoom.animal.dto.request.AnimalNicknameUpdateRequest;
 import com.paw.ddasoom.animal.dto.response.AnimalDetailPageResponse;
 import com.paw.ddasoom.animal.dto.response.AnimalListPageResponse;
 import com.paw.ddasoom.animal.dto.response.AnimalMainPageResponse;
 import com.paw.ddasoom.animal.dto.response.AnimalMyPageResponse;
 import com.paw.ddasoom.animal.service.AnimalLikeService;
-import com.paw.ddasoom.animal.service.AnimalNicknameService;
 import com.paw.ddasoom.animal.service.AnimalQueryService;
 import com.paw.ddasoom.common.dto.ApiResponse;
 import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.common.security.CustomUserDetails;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,21 +35,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AnimalController {
 
-  private final AnimalNicknameService animalNicknameService;
+  // private final AnimalNicknameService animalNicknameService;
   private final AnimalLikeService animalLikeService;
   private final AnimalQueryService animalQueryService;
-
-  /**
-   * 닉네임 이름 수정 요청 시, 변경된 닉네임 저장 (임보 보호자용)
-   */
-  @PatchMapping("/{animalId}/nickname")
-  public ResponseEntity<ApiResponse<Void>> updateNickname(
-      @PathVariable Long animalId,
-      @Valid @RequestBody AnimalNicknameUpdateRequest request) {
-    animalNicknameService.updateNickname(animalId, request.nickname());
-    log.info("닉네임 이름이 변경되었습니다: {}", request.nickname());
-    return ResponseEntity.ok(ApiResponse.success("유기동물 이름이 변경되었습니다."));
-  }
 
   /**
    * 좋아요 버튼 클릭 시 (Redis dirty 기록 — 배치가 RDB 반영)

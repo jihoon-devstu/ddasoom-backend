@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.paw.ddasoom.animal.exception.AnimalException;
 import com.paw.ddasoom.animal.repository.AnimalLikeJdbcRepository;
-import com.paw.ddasoom.animal.service.AnimalLikeSyncItem;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

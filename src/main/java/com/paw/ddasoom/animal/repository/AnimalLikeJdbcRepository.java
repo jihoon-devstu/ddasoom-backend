@@ -6,7 +6,7 @@ import java.util.Set;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import com.paw.ddasoom.animal.service.AnimalLikeSyncItem;
+import com.paw.ddasoom.animal.batch.AnimalLikeSyncItem;
 
 import lombok.RequiredArgsConstructor;
 

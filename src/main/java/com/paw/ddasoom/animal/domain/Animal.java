@@ -6,8 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import com.paw.ddasoom.animal.exception.AnimalErrorCode;
-import com.paw.ddasoom.animal.exception.AnimalException;
 import com.paw.ddasoom.common.util.BaseTimeEntity;
 
 import jakarta.persistence.Column;
@@ -96,17 +94,6 @@ public class Animal extends BaseTimeEntity {
 
   @Column(name = "rescued_at", columnDefinition = "DATETIME(6)")
   private LocalDateTime rescuedAt; // 서비스 로직에서 명시적 세팅, 자동화 금지
-
-  public void markAsFostered() {
-    this.isFostered = true;
-  }
-
-  public void changeNickname(String nickname) {
-    if (nickname == null || nickname.isBlank()) {
-      throw new AnimalException(AnimalErrorCode.ANIMAL_NAME_INVALID);
-    }
-    this.nickname = nickname;
-  }
 
   // Animal.java에 추가할 비즈니스 메서드
 

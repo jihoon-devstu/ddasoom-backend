@@ -1,5 +1,6 @@
 package com.paw.ddasoom.image.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.paw.ddasoom.image.domain.Image;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,6 +10,9 @@ public class ImageResponse {
 
     private final Long imageId;
     private final String url;
+    // Lombok getter가 isThumbnail() → Jackson 기본 직렬화 시 필드명이 "thumbnail"로 축약됨.
+    // 프론트 계약(isThumbnail)과 일치시키기 위해 명시 고정.
+    @JsonProperty("isThumbnail")
     private final boolean isThumbnail;
 
     @Builder

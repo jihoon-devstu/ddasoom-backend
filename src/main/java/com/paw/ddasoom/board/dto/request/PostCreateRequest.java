@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PostCreateRequest {
 
-
+    @NotBlank(message = "게시판 종류를 선택해주세요.")
     private String boardType;
 
     private String category;

@@ -31,7 +31,7 @@ public class ImageService {
             "image/jpeg", "image/png", "image/gif", "image/webp");
 
     // 소유자당 최대 장수 — 게시글 UX 및 스토리지 관리 기준 (IMAGE_FLOW 3-3)
-    private static final int MAX_IMAGE_COUNT = 10;
+    private static final int MAX_IMAGE_COUNT = 20;
 
     private final ImageRepository imageRepository;
     private final MinioUtil minioUtil;
@@ -97,7 +97,7 @@ public class ImageService {
      *
      * @throws ImageException IMAGE_004 — 없거나 삭제된 imageId 포함
      * @throws ImageException IMAGE_006 — 다른 소유자에 연결된 imageId 포함
-     * @throws ImageException IMAGE_003 — 연결 후 활성 이미지 10장 초과 (전체 롤백)
+     * @throws ImageException IMAGE_003 — 연결 후 활성 이미지 20장 초과 (전체 롤백)
      */
     @Transactional
     public void attach(List<Long> imageIds, OwnerType ownerType, Long ownerId) {

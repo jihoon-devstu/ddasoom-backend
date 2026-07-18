@@ -8,6 +8,7 @@ import com.paw.ddasoom.board.service.PostService;
 import com.paw.ddasoom.common.dto.ApiResponse;
 import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.common.security.CustomUserDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -44,7 +45,7 @@ public class PostController {
     @PostMapping
     public ResponseEntity<ApiResponse<Long>> createPost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody PostCreateRequest request) {
+            @Valid @RequestBody PostCreateRequest request) {
         Long postId = postService.createPost(userDetails.getMemberId(), request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("게시글이 등록되었습니다.", postId));
@@ -55,7 +56,7 @@ public class PostController {
     public ResponseEntity<ApiResponse<Void>> updatePost(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long postId,
-            @RequestBody PostUpdateRequest request) {
+            @Valid @RequestBody PostUpdateRequest request) {
         postService.updatePost(userDetails.getMemberId(), postId, request);
         return ResponseEntity.ok(ApiResponse.success("게시글이 수정되었습니다."));
     }

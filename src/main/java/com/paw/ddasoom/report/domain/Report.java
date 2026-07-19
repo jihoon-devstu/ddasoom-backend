@@ -50,7 +50,7 @@ public class Report extends BaseTimeEntity{
   private Member reporter;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "target_id", nullable = false, length = 20)
+  @Column(name = "target_type", nullable = false, length = 20)
   private ReportTargetType targetType;
 
   @Column(name = "target_id", nullable = false)

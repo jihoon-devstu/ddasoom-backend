@@ -11,6 +11,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class FosterAdminListResponse {
+
   private Long fosterId;
 
   private Long animalId;
@@ -24,6 +25,10 @@ public class FosterAdminListResponse {
   private String reviewerNickname;
 
   private FosterStatus status;
+
+  private LocalDateTime fosterStartAt;
+  private LocalDateTime fosterEndAt;
+  private LocalDateTime fosterExtendAt;
 
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
@@ -40,6 +45,9 @@ public class FosterAdminListResponse {
         .reviewerId(foster.getReviewer() != null ? foster.getReviewer().getId() : null)
         .reviewerNickname(foster.getReviewer() != null ? foster.getReviewer().getNickname() : null)
         .status(foster.getStatus())
+        .fosterStartAt(foster.getFosterStartAt())
+        .fosterEndAt(foster.getFosterEndAt())
+        .fosterExtendAt(foster.getFosterExtendAt())
         .createdAt(foster.getCreatedAt())
         .updatedAt(foster.getUpdatedAt())
         .deletedAt(foster.getDeletedAt())

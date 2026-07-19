@@ -66,13 +66,14 @@ public class FosterAdminService {
     LocalDateTime endAt = endDate != null ? endDate.plusDays(1).atStartOfDay() : null;
 
     Page<Foster> fosterList = fosterRepository.findAllForAdmin(
-        status,
-        activeOnly,
-        includeDeleted,
-        startAt,
-        endAt,
-        pageable
-    );
+      status,
+      activeOnly,
+      ACTIVE_FOSTER_STATUSES,
+      includeDeleted,
+      startAt,
+      endAt,
+      pageable
+  );
 
     return PageResponse.of(fosterList, FosterAdminListResponse::from);
   }

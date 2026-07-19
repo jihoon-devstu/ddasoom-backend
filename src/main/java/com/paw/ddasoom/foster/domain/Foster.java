@@ -41,7 +41,7 @@ public class Foster extends BaseTimeEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "foster_id", nullable = false)
-  private Long fosterId;
+  private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "animal_id", nullable = false, foreignKey = @ForeignKey(name = "fk_foster_animal"))
@@ -74,7 +74,7 @@ public class Foster extends BaseTimeEntity {
   @Enumerated(EnumType.STRING)
   @JdbcTypeCode(Types.VARCHAR)
   @Column(nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
-  private FosterStatus status = FosterStatus.PENDING;
+  private FosterStatus status;
 
   @Column(columnDefinition = "DATETIME(6)")
   private LocalDateTime fosterStartAt;

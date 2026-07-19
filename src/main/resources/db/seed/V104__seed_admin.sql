@@ -94,64 +94,92 @@ INSERT INTO `faq` (`category`, `question`, `answer`, `is_visible`, `created_at`,
 -- ── 3. QNA (문의자 = 일반회원, 답변자 = 관리자) ──────────────────────────────
 -- 이미지 첨부는 기능상 가능하나 이번 더미데이터에는 미포함 (image 테이블 미연동)
 
-INSERT INTO `qna` (`questioner_id`, `answered_id`, `title`, `content`, `answer`, `status`, `is_visible`, `answered_at`, `created_at`, `updated_at`) VALUES
--- 답변 완료 5건
+INSERT INTO `qna` (`questioner_id`, `title`, `content`, `status`, `is_visible`, `answered_at`, `created_at`, `updated_at`) VALUES
+-- 답변 완료 5건 (관리자 답변은 아래 qna_comment로 이동)
 ((SELECT member_id FROM member WHERE email = 'user01@ddasoom.com'),
- (SELECT member_id FROM member WHERE email = 'adminkoo@ddasoom.com'),
  '임시보호 신청서 작성 중 오류가 발생해요',
  '주거 형태를 선택하고 다음 단계로 넘어가려는데 계속 같은 화면에 머물러 있습니다. 어떻게 해야 하나요?',
- '안녕하세요, 불편을 드려 죄송합니다. 확인 결과 일시적인 네트워크 오류로 확인되었습니다. 현재는 정상 작동하고 있으니 다시 시도해 주시기 바랍니다. 동일 증상이 재발할 경우 다시 문의해 주세요.',
  'ANSWERED', TRUE, '2026-07-02 10:30:00.000000', '2026-07-01 15:20:00.000000', '2026-07-02 10:30:00.000000'),
 
 ((SELECT member_id FROM member WHERE email = 'user02@ddasoom.com'),
- (SELECT member_id FROM member WHERE email = 'adminkoo@ddasoom.com'),
  '탈퇴 후 재가입이 가능한가요?',
  '개인 사정으로 탈퇴했다가 다시 서비스를 이용하고 싶은데, 같은 이메일로 재가입이 가능한지 궁금합니다.',
- '네, 가능합니다. 탈퇴 후에는 계정이 비활성화되며, 동일한 이메일과 닉네임으로 언제든 재가입하실 수 있습니다. 기존 작성글은 재가입과 별개로 유지됩니다.',
  'ANSWERED', TRUE, '2026-07-03 09:15:00.000000', '2026-07-02 18:40:00.000000', '2026-07-03 09:15:00.000000'),
 
 ((SELECT member_id FROM member WHERE email = 'user03@ddasoom.com'),
- (SELECT member_id FROM member WHERE email = 'adminkoo@ddasoom.com'),
  '닉네임 변경은 몇 번까지 가능한가요?',
  '닉네임 변경 횟수에 제한이 있나요? 마이페이지에서 계속 바꿀 수 있는지 궁금합니다.',
- '현재 닉네임 변경 횟수에는 별도 제한이 없습니다. 다만 다른 회원과 중복될 수 없으니 마이페이지 수정 화면에서 중복 확인 후 변경해 주시기 바랍니다.',
  'ANSWERED', TRUE, '2026-07-04 14:00:00.000000', '2026-07-04 09:30:00.000000', '2026-07-04 14:00:00.000000'),
 
 ((SELECT member_id FROM member WHERE email = 'user04@ddasoom.com'),
- (SELECT member_id FROM member WHERE email = 'adminkoo@ddasoom.com'),
  '임시보호 중 개인 사정으로 조기 종료가 가능한가요?',
  '현재 임시보호 중인데 갑작스러운 사정으로 보호를 지속하기 어려워졌습니다. 중도에 종료할 수 있는 절차가 궁금합니다.',
- '네, 가능합니다. 마이페이지의 해당 임시보호 신청 내역에서 담당자에게 연락 주시면 조기 종료 절차를 안내해 드립니다. 다만 최대한 빠르게 알려주셔야 다음 임시보호처를 원활히 준비할 수 있습니다.',
  'ANSWERED', TRUE, '2026-07-06 11:20:00.000000', '2026-07-05 20:10:00.000000', '2026-07-06 11:20:00.000000'),
 
 ((SELECT member_id FROM member WHERE email = 'user05@ddasoom.com'),
- (SELECT member_id FROM member WHERE email = 'adminkoo@ddasoom.com'),
  '커뮤니티 게시글 신고는 어떻게 하나요?',
  '부적절한 내용의 게시글을 발견했는데 신고 기능이 안 보입니다. 어떻게 신고할 수 있나요?',
- '현재 게시글 내 신고 버튼 기능은 준비 중입니다. 우선은 해당 게시글의 제목과 링크를 이 1:1 문의로 남겨주시면 관리자가 즉시 확인 후 조치하겠습니다. 불편을 드려 죄송합니다.',
  'ANSWERED', TRUE, '2026-07-09 16:45:00.000000', '2026-07-09 13:00:00.000000', '2026-07-09 16:45:00.000000'),
 
 -- 답변 대기 3건
 ((SELECT member_id FROM member WHERE email = 'user01@ddasoom.com'),
- NULL,
  '입양 후기 게시글 카테고리를 잘못 선택했어요',
  '커뮤니티(정보교환)로 올려야 하는데 실수로 입양후기 카테고리로 작성했습니다. 수정 방법이 없어 문의드립니다.',
- NULL,
  'PENDING', TRUE, NULL, '2026-07-11 10:05:00.000000', '2026-07-11 10:05:00.000000'),
 
 ((SELECT member_id FROM member WHERE email = 'user03@ddasoom.com'),
- NULL,
  '휴대폰 번호 인증 절차가 있나요?',
  '가입 시 전화번호를 입력했는데 별도의 인증 절차 없이 그대로 저장되는 것 같습니다. 인증 없이도 안전한지 궁금합니다.',
- NULL,
  'PENDING', TRUE, NULL, '2026-07-12 15:30:00.000000', '2026-07-12 15:30:00.000000'),
 
 ((SELECT member_id FROM member WHERE email = 'user04@ddasoom.com'),
- NULL,
  '모바일 앱은 별도로 없나요?',
  '현재 웹사이트로만 이용 가능한데 모바일 앱 출시 계획이 있는지 궁금합니다.',
- NULL,
  'PENDING', TRUE, NULL, '2026-07-13 08:20:00.000000', '2026-07-13 08:20:00.000000');
+
+
+INSERT INTO `qna_comment` (`qna_id`, `member_id`, `content`, `created_at`, `updated_at`) VALUES
+-- 관리자 답변 5건 (기존 qna.answer → 코멘트로 이동)
+((SELECT qna_id FROM qna WHERE title = '임시보호 신청서 작성 중 오류가 발생해요'),
+ (SELECT member_id FROM member WHERE email = 'adminkoo@ddasoom.com'),
+ '안녕하세요, 불편을 드려 죄송합니다. 확인 결과 일시적인 네트워크 오류로 확인되었습니다. 현재는 정상 작동하고 있으니 다시 시도해 주시기 바랍니다. 동일 증상이 재발할 경우 다시 문의해 주세요.',
+ '2026-07-02 10:30:00.000000', '2026-07-02 10:30:00.000000'),
+
+((SELECT qna_id FROM qna WHERE title = '탈퇴 후 재가입이 가능한가요?'),
+ (SELECT member_id FROM member WHERE email = 'adminkoo@ddasoom.com'),
+ '네, 가능합니다. 탈퇴 후에는 계정이 비활성화되며, 동일한 이메일과 닉네임으로 언제든 재가입하실 수 있습니다. 기존 작성글은 재가입과 별개로 유지됩니다.',
+ '2026-07-03 09:15:00.000000', '2026-07-03 09:15:00.000000'),
+
+((SELECT qna_id FROM qna WHERE title = '닉네임 변경은 몇 번까지 가능한가요?'),
+ (SELECT member_id FROM member WHERE email = 'adminkoo@ddasoom.com'),
+ '현재 닉네임 변경 횟수에는 별도 제한이 없습니다. 다만 다른 회원과 중복될 수 없으니 마이페이지 수정 화면에서 중복 확인 후 변경해 주시기 바랍니다.',
+ '2026-07-04 14:00:00.000000', '2026-07-04 14:00:00.000000'),
+
+((SELECT qna_id FROM qna WHERE title = '임시보호 중 개인 사정으로 조기 종료가 가능한가요?'),
+ (SELECT member_id FROM member WHERE email = 'adminkoo@ddasoom.com'),
+ '네, 가능합니다. 마이페이지의 해당 임시보호 신청 내역에서 담당자에게 연락 주시면 조기 종료 절차를 안내해 드립니다. 다만 최대한 빠르게 알려주셔야 다음 임시보호처를 원활히 준비할 수 있습니다.',
+ '2026-07-06 11:20:00.000000', '2026-07-06 11:20:00.000000'),
+
+((SELECT qna_id FROM qna WHERE title = '커뮤니티 게시글 신고는 어떻게 하나요?'),
+ (SELECT member_id FROM member WHERE email = 'adminkoo@ddasoom.com'),
+ '현재 게시글 내 신고 버튼 기능은 준비 중입니다. 우선은 해당 게시글의 제목과 링크를 이 1:1 문의로 남겨주시면 관리자가 즉시 확인 후 조치하겠습니다. 불편을 드려 죄송합니다.',
+ '2026-07-09 16:45:00.000000', '2026-07-09 16:45:00.000000'),
+
+-- 문의자 추가 댓글 3건 (기존 유지)
+((SELECT qna_id FROM qna WHERE title = '임시보호 신청서 작성 중 오류가 발생해요'),
+ (SELECT member_id FROM member WHERE email = 'user01@ddasoom.com'),
+ '빠른 답변 감사합니다! 다시 시도해보니 정상적으로 진행되네요.',
+ '2026-07-02 11:00:00.000000', '2026-07-02 11:00:00.000000'),
+
+((SELECT qna_id FROM qna WHERE title = '닉네임 변경은 몇 번까지 가능한가요?'),
+ (SELECT member_id FROM member WHERE email = 'user03@ddasoom.com'),
+ '자세한 안내 감사합니다. 참고해서 변경하겠습니다.',
+ '2026-07-04 14:30:00.000000', '2026-07-04 14:30:00.000000'),
+
+((SELECT qna_id FROM qna WHERE title = '임시보호 중 개인 사정으로 조기 종료가 가능한가요?'),
+ (SELECT member_id FROM member WHERE email = 'user04@ddasoom.com'),
+ '안내해주신 대로 담당자분께 연락드리겠습니다. 감사합니다.',
+ '2026-07-06 12:00:00.000000', '2026-07-06 12:00:00.000000');
 
 -- ── 4. QNA 댓글 (답변 완료 건에 문의자의 추가 감사 댓글) ──────────────────────────────
 

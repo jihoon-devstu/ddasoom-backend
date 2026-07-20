@@ -12,6 +12,11 @@ import com.paw.ddasoom.qna.domain.QnaStatus;
 import lombok.Builder;
 import lombok.Getter;
 
+/*
+ * [문의 상세 응답]
+ * 정적 팩토리 from()에서 조립 — 엔티티(Qna)를 컨트롤러 밖으로 노출하지 않기 위한 경계
+ * 이미지 목록은 서비스가 Presigned URL로 발급해 넘겨준 값을 그대로 담음
+ */
 @Getter
 @Builder
 public class QnaDetailResponse {
@@ -22,7 +27,7 @@ public class QnaDetailResponse {
   private String content;
   private QnaStatus status;
   private LocalDateTime createdAt;    // 문의 작성일
-  private LocalDateTime answeredAt;   // 최신 답변일 (미답변 null)
+  private LocalDateTime answeredAt;   // 최초 답변일 (미답변 null)
   private LocalDateTime updatedAt;
   private List<ImageResponse> images;
   private List<QnaCommentResponse> comments;

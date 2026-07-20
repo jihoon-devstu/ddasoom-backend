@@ -13,6 +13,6 @@ public class QnaCommentCreateRequest {
   @NotBlank(message = "내용은 필수입니다.")
   private String content;
 
-  private List<Long> imageIds;
+  private List<Long> imageIds; // optional — 미리 업로드된 이미지 id 목록
 
 }

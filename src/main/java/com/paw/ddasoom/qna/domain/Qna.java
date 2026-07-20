@@ -25,8 +25,11 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "qna")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+// ==========================
+// [대화형 스레드 구조]
+// ==========================
 public class Qna extends BaseTimeEntity {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "qna_id")
@@ -34,7 +37,7 @@ public class Qna extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "questioner_id", nullable = false)
-    private Member questioner;
+    private Member questioner; // 질문자(유저)
 
     @Column(nullable = false, length = 255)
     private String title;
@@ -42,17 +45,20 @@ public class Qna extends BaseTimeEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    /* [최적화: SSOT] QnA 생성 시 기본 상태는 항상 '답변 대기'로 선언 */
+    /* [QnA 생성] - 기본 상태: PENDING, 관리자 답변 시 ANSWERED로 업데이트 */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private QnaStatus status = QnaStatus.PENDING;
 
+    /* [유저가 비밀글로 설정하지 않은 채 욕설/비방을 올린 경우 관리자가 숨김 처리] */
     @Column(nullable = false)
     private Boolean isVisible=true;
 
+    /* [최초 응대 시각] */
     @Column(columnDefinition = "DATETIME(6)")
     private LocalDateTime answeredAt;
 
+    /* [삭제된 시각 기록] - Soft Delete 사용, 데이터 복구&이력 관리 가능 */
     @Column(columnDefinition = "DATETIME(6)")
     private LocalDateTime deletedAt;
 
@@ -63,10 +69,17 @@ public class Qna extends BaseTimeEntity {
         this.content = content;
     }
 
-    /* [QnA 답변 작성 시 상태 변경 + 답변 일시 갱신] */
+    // =========================================================================
+    // 비즈니스 메서드 (의도가 명확한 상태 변경 행위)
+    // 무분별한 Setter를 배제하고, 객체 스스로가 자신의 상태를 변경하도록 도메인 로직 응집
+    // =========================================================================
+
+    /* [QnA 답변 작성 시 상태 변경 + 답변 일시 저장] */
     public void markAnswered() {
         this.status = QnaStatus.ANSWERED;
-        this.answeredAt = LocalDateTime.now(); // 매 답변마다 최신화
+        if (this.answeredAt == null) {
+            this.answeredAt = LocalDateTime.now(); // 최초 답변 시각 고정 (재답변 시 갱신하지 않음 — 최초 응대 지표 보존)
+        }
     }
 
     /* [유저 재질문 코멘트 추가 → 답변 대기] */

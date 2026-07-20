@@ -5,6 +5,7 @@ import java.util.List;
 import com.paw.ddasoom.support.domain.FaqCategory;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FaqUpdateRequest {
 
-  @NotBlank(message = "카테고리는 필수입니다.")
+  @NotNull(message = "카테고리는 필수입니다.")
   private FaqCategory category;
 
   @NotBlank(message = "질문은 필수입니다.")

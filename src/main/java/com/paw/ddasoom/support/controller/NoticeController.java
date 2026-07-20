@@ -23,12 +23,14 @@ public class NoticeController {
 
     private final NoticeService noticeService;
 
+    // 1. 사용자용 공지사항 목록 조회 (노출 + 미삭제, 고정글 우선)
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<NoticeSummaryResponse>>> getNotices(
             @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.success(noticeService.getNotices(pageable)));
     }
 
+    // 2. 사용자용 공지사항 상세 조회 (비노출 공지는 서비스에서 404 처리)
     @GetMapping("/{noticeId}")
     public ResponseEntity<ApiResponse<NoticeResponse>> getNotice(@PathVariable Long noticeId) {
         return ResponseEntity.ok(ApiResponse.success(noticeService.getNotice(noticeId)));

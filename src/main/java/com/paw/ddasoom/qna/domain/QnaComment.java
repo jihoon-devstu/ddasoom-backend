@@ -24,6 +24,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "qna_comment")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+
 public class QnaComment extends BaseTimeEntity {
 
   @Id
@@ -52,6 +53,11 @@ public class QnaComment extends BaseTimeEntity {
     this.member = member;
     this.content = content;
   }
+
+  // =========================================================================
+  // 비즈니스 메서드 (의도가 명확한 상태 변경 행위들)
+  // 상태 변경 행위를 moderation 용도로만 최소 노출
+  // =========================================================================
 
   // moderation 전용 — 일반 delete/update 경로는 만들지 않음
   /* [QnA 댓글 논리 삭제 처리] */

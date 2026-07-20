@@ -10,6 +10,11 @@ import com.paw.ddasoom.qna.domain.QnaComment;
 import lombok.Builder;
 import lombok.Getter;
 
+/*
+ * [코멘트 단건 응답]
+ * 정적 팩토리 from()에서 조립 — 엔티티를 컨트롤러 밖으로 노출하지 않음
+ * writerRole을 함께 내려, 유저/관리자 공용 테이블에 쌓인 스레드를 화면에서 구분할 수 있게 함
+ */
 @Getter
 @Builder
 public class QnaCommentResponse {

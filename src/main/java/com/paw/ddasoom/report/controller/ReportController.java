@@ -23,6 +23,7 @@ public class ReportController {
 
   private final ReportService reportService;
 
+  // 1. 신고 접수 — 유저는 '접수'만 가능하고, 큐 조회·판정은 AdminReportController가 담당
   // 로그인 필수 — PUBLIC_URIS 미등록 = anyRequest authenticated가 커버 (기본 잠금)
   @PostMapping
   public ResponseEntity<ApiResponse<Void>> createReport(

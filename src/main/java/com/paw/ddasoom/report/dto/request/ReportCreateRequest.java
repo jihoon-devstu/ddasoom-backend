@@ -7,6 +7,11 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/*
+ * [신고 접수 요청]
+ * enum 필드는 반드시 @NotNull로 검증 — @NotBlank는 CharSequence 전용이라 enum에 쓰면 검증 시점에 500 발생
+ * 'ETC면 content 필수'는 필드 단독으로 판단할 수 없는 cross-field 규칙이라 서비스에서 검증
+ */
 @Getter
 @NoArgsConstructor
 public class ReportCreateRequest {

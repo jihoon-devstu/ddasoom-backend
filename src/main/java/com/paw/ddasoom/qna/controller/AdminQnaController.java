@@ -25,6 +25,11 @@ import com.paw.ddasoom.qna.service.QnaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+/*
+ * [관리자용 문의 API]
+ * 유저용(QnaController)과 컨트롤러만 분리하고 QnaService는 공유
+ * /api/admin/** 는 SecurityConfig가 URL 레벨에서 자동 잠그므로 컨트롤러에 권한 체크 코드가 없음
+ */
 @RestController
 @RequestMapping("/api/admin/qnas")
 @RequiredArgsConstructor

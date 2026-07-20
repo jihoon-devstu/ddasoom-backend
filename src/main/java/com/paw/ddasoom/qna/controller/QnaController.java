@@ -24,6 +24,11 @@ import com.paw.ddasoom.qna.service.QnaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+/*
+ * [유저용 문의 API]
+ * 관리자용(AdminQnaController)과 컨트롤러만 분리하고 QnaService는 공유 — 도메인 로직 중복 방지
+ * 이쪽은 '내 문의'만 다루므로 모든 경로에서 서비스가 소유권(validateOwner)을 검증
+ */
 @RestController
 @RequestMapping("/api/qnas")
 @RequiredArgsConstructor
@@ -68,6 +73,6 @@ public class QnaController {
     QnaDetailResponse response =
         qnaService.addUserComment(userDetails.getMemberId(), qnaId, request);
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(ApiResponse.success("문의가 등록되었습니다.", response));
+        .body(ApiResponse.success("답글이 등록되었습니다.", response));
   }
 }

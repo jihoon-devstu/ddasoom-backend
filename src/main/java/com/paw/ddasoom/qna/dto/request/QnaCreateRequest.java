@@ -7,6 +7,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/*
+ * [문의 작성 요청]
+ * String 필드는 @NotBlank로 검증 — @NotNull과 달리 ""(빈 문자열)과 공백 문자열까지 거부
+ */
 @Getter
 @NoArgsConstructor
 public class QnaCreateRequest {

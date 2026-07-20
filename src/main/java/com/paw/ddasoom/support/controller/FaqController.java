@@ -26,6 +26,7 @@ public class FaqController {
 
   private final FaqService faqService;
 
+  // 카테고리는 enum 고정값이라 요청마다 스트림을 다시 돌릴 이유가 없음
   // 서버 기동 시 1회 생성, 재사용
   private static final List<FaqCategoryResponse> CACHED_CATEGORIES =
       Arrays.stream(FaqCategory.values())

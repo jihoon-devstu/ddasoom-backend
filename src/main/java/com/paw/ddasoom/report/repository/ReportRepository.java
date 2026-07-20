@@ -14,6 +14,7 @@ import com.paw.ddasoom.report.domain.ReportTargetType;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
 
+  // 상세 조회 — 응답에 신고자·처리자 닉네임이 둘 다 필요하므로 한 번에 fetch (N+1 차단)
   @EntityGraph(attributePaths = {"reporter", "processor"})
   Optional<Report> findByReportIdAndDeletedAtIsNull(Long reportId);
   
@@ -21,6 +22,9 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
   boolean existsByReporterAndTargetTypeAndTargetId(Member reporter, ReportTargetType targetType, Long targetId); 
 
   // 대상 누적 신고 건수 (상세 응답용 — 제재 판단 근거)
+  // status 조건을 걸지 않아 PENDING+APPROVED+REJECTED가 모두 집계됨.
+  // 반려(허위 판정)는 제재 근거에서 빠져야 하므로 status 조건 추가 검토 필요.
+  // 조회 빈도(상세당 1회)와 데이터 규모상 status 전용 인덱스는 과설계 — idx_report_target으로 충분
   long countByTargetTypeAndTargetIdAndDeletedAtIsNull(ReportTargetType targetType, Long targetId);
 
   // 목록 — 필터 조합 4종 (qna 방식: null 분기 + 파생 쿼리. 필터 3개째부터 QueryDSL 전환)

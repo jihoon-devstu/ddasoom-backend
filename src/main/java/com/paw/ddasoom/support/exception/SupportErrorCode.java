@@ -12,7 +12,8 @@ import lombok.RequiredArgsConstructor;
 public enum SupportErrorCode implements ErrorCode {
 
   NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "SUPPORT_001", "해당 공지사항을 찾을 수 없습니다."),
-  FAQ_NOT_FOUND(HttpStatus.NOT_FOUND, "SUPPORT_002", "해당 FAQ를 찾을 수 없습니다.");
+  FAQ_NOT_FOUND(HttpStatus.NOT_FOUND, "SUPPORT_002", "해당 FAQ를 찾을 수 없습니다."),
+  INVALID_PIN_ORDER(HttpStatus.BAD_REQUEST, "SUPPORT_003", "고정 순서에 중복된 공지가 포함되어 있습니다.");
 
   private final HttpStatus status;
   private final String code;

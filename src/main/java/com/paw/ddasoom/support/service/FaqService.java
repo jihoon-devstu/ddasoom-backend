@@ -5,6 +5,9 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.paw.ddasoom.common.util.HtmlSanitizer;
+import com.paw.ddasoom.image.domain.OwnerType;
+import com.paw.ddasoom.image.service.ImageService;
 import com.paw.ddasoom.support.domain.Faq;
 import com.paw.ddasoom.support.dto.request.FaqCreateRequest;
 import com.paw.ddasoom.support.dto.request.FaqUpdateRequest;
@@ -25,7 +28,8 @@ public class FaqService {
 // ================================
   
   private final FaqRepository faqRepository;
-  
+  private final ImageService imageService;
+
 // ====== 1. 유저용(조회) ========
 
   // 1) 전체 FAQ 목록 조회
@@ -70,9 +74,10 @@ public class FaqService {
     Faq faq = Faq.builder()
       .category(request.getCategory())
       .question(request.getQuestion())
-      .answer(request.getAnswer())
+      .answer(HtmlSanitizer.sanitize(request.getAnswer()))
       .build();
     Faq savedFaq = faqRepository.save(faq);
+    imageService.attach(request.getImageIds(), OwnerType.FAQ, savedFaq.getId());
     return FaqResponse.from(savedFaq);
   }
 
@@ -80,7 +85,8 @@ public class FaqService {
   @Transactional
   public FaqResponse updateFaq(Long faqId, FaqUpdateRequest request) {
     Faq faq = getFaqEntity(faqId);
-    faq.update(request.getCategory(), request.getQuestion(), request.getAnswer());
+    faq.update(request.getCategory(), request.getQuestion(), HtmlSanitizer.sanitize(request.getAnswer()));
+    imageService.syncImages(request.getImageIds(), OwnerType.FAQ, faqId);
     faqRepository.flush();
     return FaqResponse.from(faq);
   }
@@ -100,6 +106,7 @@ public class FaqService {
   public void deleteFaq(Long faqId) {
     Faq faq = getFaqEntity(faqId);
     faq.softDelete();
+    imageService.syncImages(List.of(), OwnerType.FAQ, faqId);
   }
 
 // ====== 3. 내부 조회 ========

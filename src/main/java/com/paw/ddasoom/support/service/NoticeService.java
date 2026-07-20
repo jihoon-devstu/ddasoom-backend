@@ -2,6 +2,7 @@ package com.paw.ddasoom.support.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -10,11 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.paw.ddasoom.common.dto.PageResponse;
+import com.paw.ddasoom.common.util.HtmlSanitizer;
 import com.paw.ddasoom.image.domain.OwnerType;
 import com.paw.ddasoom.image.service.ImageService;
 import com.paw.ddasoom.member.domain.Member;
-import com.paw.ddasoom.member.exception.MemberErrorCode;
-import com.paw.ddasoom.member.exception.MemberException;
 import com.paw.ddasoom.member.repository.MemberRepository;
 import com.paw.ddasoom.support.domain.Notice;
 import com.paw.ddasoom.support.dto.request.NoticeCreateRequest;
@@ -77,14 +77,13 @@ public class NoticeService {
   // 3) 새로운 공지사항 등록
   @Transactional
   public NoticeResponse createNotice(Long memberId, NoticeCreateRequest request) {
-    Member member = memberRepository.findById(memberId)
-      .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+    Member member = memberRepository.getReferenceById(memberId);
 
     // 3-1) 요청 데이터
   Notice notice = Notice.builder()
     .member(member)
     .title(request.getTitle())
-    .content(request.getContent())
+    .content(HtmlSanitizer.sanitize(request.getContent()))
     .build();
 
   // 3-2) DB 저장 (이미지 연결에 필요한 noticeId 확보)
@@ -99,7 +98,7 @@ public class NoticeService {
   @Transactional
   public NoticeResponse updateNotice(Long noticeId, NoticeUpdateRequest request) {
     Notice notice = getNoticeEntity(noticeId);
-    notice.update(request.getTitle(), request.getContent());
+    notice.update(request.getTitle(), HtmlSanitizer.sanitize(request.getContent()));
 
     //4-1) 최종 imageIds 전체로 diff (제외 이미지: soft delete + 순서 갱신)
     imageService.syncImages(request.getImageIds(),OwnerType.NOTICE, noticeId);
@@ -130,6 +129,9 @@ public class NoticeService {
    */
   @Transactional
   public void reorderPinned(List<Long> orderedNoticeIds) {
+    if (orderedNoticeIds.size() != Set.copyOf(orderedNoticeIds).size()) {
+      throw new SupportException(SupportErrorCode.INVALID_PIN_ORDER);
+    }
     List<Notice> currentlyPinned = noticeRepository.findAllPinned();
 
     // 7-1) 기존 고정글 해제 (빈 리스트 전송 시 = 전체 해제)

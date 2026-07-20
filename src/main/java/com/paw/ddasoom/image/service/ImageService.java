@@ -124,7 +124,7 @@ public class ImageService {
 
         // 장수 검증이 연결 "후"인 이유: 업로드 시점엔 소유자가 없어 소유자당 개수를 셀 수 없음.
         // 초과 시 예외 → @Transactional 롤백으로 attachTo/updateOrder까지 전부 취소
-        long activeCount = imageRepository.countByOwnerTypeAndOwnerIdAndDeletedAtIsNull(ownerType, ownerId);
+        long activeCount = imageRepository.countActiveImages(ownerType, ownerId);
         if (activeCount > MAX_IMAGE_COUNT) {
             throw new ImageException(ImageErrorCode.IMAGE_COUNT_EXCEEDED);
         }
@@ -148,7 +148,7 @@ public class ImageService {
         List<Long> requestedIds = imageIds != null ? imageIds : List.of();
 
         List<Image> activeImages = imageRepository
-                .findAllByOwnerTypeAndOwnerIdAndDeletedAtIsNullOrderByImageOrderAsc(ownerType, ownerId);
+                .findActiveImages(ownerType, ownerId);
 
         // 기존 활성 중 요청에 없는 것만 soft delete (MinIO 객체는 잔존 — 고아 수용, IMAGE_FLOW 7장)
         for (Image image : activeImages) {
@@ -169,7 +169,7 @@ public class ImageService {
     @Transactional(readOnly = true)
     public List<ImageResponse> getImages(OwnerType ownerType, Long ownerId) {
         return imageRepository
-                .findAllByOwnerTypeAndOwnerIdAndDeletedAtIsNullOrderByImageOrderAsc(ownerType, ownerId)
+                .findActiveImages(ownerType, ownerId)
                 .stream()
                 .map(image -> ImageResponse.from(image, minioUtil.getUrl(ownerType, image.getImageKey())))
                 .toList();
@@ -196,7 +196,7 @@ public class ImageService {
             throw new ImageException(ImageErrorCode.IMAGE_OWNER_MISMATCH);
         }
 
-        imageRepository.findByOwnerTypeAndOwnerIdAndIsThumbnailTrueAndDeletedAtIsNull(ownerType, ownerId)
+        imageRepository.findThumbnail(ownerType, ownerId)
                 .ifPresent(Image::unmarkAsThumbnail);
 
         target.markAsThumbnail();
@@ -213,7 +213,7 @@ public class ImageService {
         }
 
         List<Image> thumbnails = imageRepository
-                .findAllByOwnerTypeAndOwnerIdInAndIsThumbnailTrueAndDeletedAtIsNull(ownerType, ownerIds);
+                .findThumbnails(ownerType, ownerIds);
 
         return thumbnails.stream()
                 .collect(Collectors.toMap(
@@ -233,7 +233,7 @@ public class ImageService {
         }
 
         List<Image> images = imageRepository
-                .findAllByOwnerTypeAndOwnerIdInAndDeletedAtIsNullOrderByImageOrderAsc(ownerType, ownerIds);
+                .findThumbnails(ownerType, ownerIds);
 
         return images.stream()
                 .collect(Collectors.groupingBy(

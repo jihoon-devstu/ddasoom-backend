@@ -2,6 +2,7 @@ package com.paw.ddasoom.common.security;
 
 import java.io.IOException;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,10 @@ import lombok.extern.slf4j.Slf4j;
  * 검증 실패 시 예외를 던지지 않고 인증 미설정 상태로 체인을 통과시킴
  * → 인가 단계에서 미인증 판정 → CustomAuthenticationEntryPoint가 401 응답
  * (필터에서 throw하면 GlobalExceptionHandler가 못 잡고 500이 떨어짐)
+ *
+ * Redis 장애 시에도 fail-close(인증 미설정으로 통과) — 보호 API는 401, 공개 API는 정상.
+ * 근거: Redis가 죽으면 로그인/재발급 자체가 불가하므로 fail-open의 실익이 없고,
+ *       강제 로그아웃(치안 기능)이 장애를 틈타 무력화되지 않아야 함.
  */
 
 @Slf4j
@@ -91,6 +96,10 @@ public class AuthJwtTokenFilter extends OncePerRequestFilter{
                   new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
           SecurityContextHolder.getContext().setAuthentication(authentication);
 
+      } catch (DataAccessException e) {
+          // Redis 조회(블랙리스트/강제로그아웃) 실패 — fail-close: 인증 미설정으로 통과시켜
+          // 보호 API는 401로 막고, 강제 로그아웃 차단이 장애를 틈타 뚫리지 않게 한다.
+          log.error("인증 중 Redis 접근 실패 — 인증 미설정으로 처리", e);
       } catch (JwtException | IllegalArgumentException e) {
           log.debug("JWT 검증 실패: {}", e.getMessage());
       }

@@ -157,7 +157,7 @@ public class MinioUtil {
         }
     }
 
-    // 키 형식: {yyyy}/{MM}/{용도}/{uuid}.{확장자} — 기간별 백업/운영 관리 용이 (IMAGE_FLOW 부록 1)
+    // 키 형식: {MM}{yyyy}//{용도}/{uuid}.{확장자} — 기간별 백업/운영 관리 용이 (IMAGE_FLOW 부록 1)
     // 확장자 검증은 ImageService의 파일 검증에서 upload 호출 전에 완료됨을 전제로 함
     private String createObjectKey(OwnerType ownerType, String originalFileName) {
         LocalDate now = LocalDate.now();

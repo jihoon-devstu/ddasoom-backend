@@ -125,7 +125,10 @@ public class MemberService {
       Member member = getMember(memberId);
       member.softDelete();
 
-      // 세션 정리: ① RT+grace 삭제 (재발급 차단)
+      // ⚠️ Redis 조작(②③)이 실패하면 @Transactional에 의해 softDelete(①)까지 롤백되는 것이 의도된 동작이다.
+      //    "DB는 탈퇴인데 세션은 살아있는" 불일치 상태를 만들지 않기 위함 — 전부 성공하거나 전부 없던 일로.
+      //    (Redis 조작 자체는 JPA 트랜잭션 대상이 아니지만, 예외가 나면 트랜잭션이 롤백되며 ①이 취소된다.)
+      // ① RT+grace 삭제 (재발급 차단)
       redisTokenService.deleteRefreshTokens(memberId);
       // ② 이미 발급된 모든 AT 즉시 차단 — 다른 탭/기기 포함 (탈퇴 회원의 활동 창 제거)
       redisTokenService.markForceLogout(memberId, jwtUtil.getAccessTokenValidityMillis());

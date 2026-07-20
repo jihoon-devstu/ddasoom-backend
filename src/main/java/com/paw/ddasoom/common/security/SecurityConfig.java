@@ -42,23 +42,27 @@ public class SecurityConfig {
         //경로별 인가 작업
                 .authorizeHttpRequests(authorize -> authorize
                         // ⚠️ requestMatchers는 선언 순서대로 매칭 — 구체적 경로(예외)를 넓은 경로보다 먼저!
+                        // (기존 "/api/auth/logout → authenticated" 예외 규칙은 삭제됨:
+                        //  auth 낱개 등록으로 logout이 어디에도 안 걸려 5번 anyRequest에서 자연 잠금 — 동일 동작)
 
-                        // 1. 공개 경로의 "예외" — auth 하위지만 토큰 필수
-                        .requestMatchers("/api/auth/logout").authenticated()
-
-                        // 2. GUEST 전용 — members 규칙보다 먼저
+                        // 1. GUEST 전용 — members 규칙보다 먼저
                         .requestMatchers("/api/members/me/signup-complete").hasRole("GUEST")
 
-                        // 3. 공개 경로 (SecurityConstants에서 관리)
+                        // 2. 공개 경로 (SecurityConstants에서 관리)
                         .requestMatchers(SecurityConstants.PUBLIC_URIS).permitAll()
 
-                        // 4. 회원 리소스 — USER/ADMIN
+                        // 3. 회원 리소스 — USER/ADMIN
                         .requestMatchers("/api/members/**").hasAnyRole("USER", "ADMIN")
+
+                        // 4. USER 전용 등록 경로 — GUEST 차단
+                        //    (⚠️ 반드시 1·2번보다 뒤 — 앞에 두면 GUEST 승급/공개 경로가 죽는다)
+                        .requestMatchers(SecurityConstants.USER_URIS).hasAnyRole("USER", "ADMIN")
 
                         // 5. 관리자 전용
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         // 6. 그 외 전부 인증 필요 (미분류 = 잠금이 기본값)
+                        //    단 authenticated는 로그인 여부만 검사 — GUEST 차단 필요 시 USER_URIS에 등록
                         .anyRequest().authenticated()
                       )
                 .formLogin(auth -> auth.disable())

@@ -93,6 +93,13 @@ public class LoginService {
       Member member = memberRepository.findById(memberId)
               .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN));
 
+      // 탈퇴 회원 차단 — RT 삭제(부수효과)에 간접 의존하지 않는 심층 방어.
+      // withdraw가 RT를 지우므로 정상 경로에선 아래 대조에서 이미 걸러지지만,
+      // 여기서 명시적으로 막아 "탈퇴 회원에게 새 AT 발급"을 원천 차단한다.
+      if (member.isDeleted()) {
+          throw new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN);
+      }
+
       if (redisTokenService.matchesRefreshToken(memberId, refreshToken)) {
           // 주 키 일치 → 회전: 새 RT 발급, 구 RT는 grace 창(30초)으로
           String newAccessToken = jwtUtil.createAccessToken(memberId, member.getRole());

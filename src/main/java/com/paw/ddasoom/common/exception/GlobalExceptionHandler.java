@@ -7,8 +7,12 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.paw.ddasoom.common.dto.ApiResponse;
@@ -51,6 +55,36 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error("INVALID_INPUT", "요청 형식이 올바르지 않습니다. 입력값을 확인해 주세요."));
+    }
+
+    // 파라미터/경로변수 바인딩 실패 3종 통합 → 400
+    //  - MethodArgumentTypeMismatch: 타입 불일치 (?ownerType=오타 등 enum 변환 실패 포함 — 커스텀 컨버터의 예외도 여기로 래핑됨)
+    //  - MissingServletRequestParameter: 필수 @RequestParam 누락
+    //  - MissingServletRequestPart: 필수 multipart 파트(file 등) 누락
+    // cause를 파고들어 세분화하지 않는다 — 프론트 처리 기준은 어차피 "400 + 입력 확인" 하나 (피드백 0-5 권고)
+    @ExceptionHandler({
+            MethodArgumentTypeMismatchException.class,
+            MissingServletRequestParameterException.class,
+            MissingServletRequestPartException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleParameterBinding(
+            Exception e, HttpServletRequest request) {
+        log.warn("요청 파라미터 바인딩 실패 - path: {} {}", request.getMethod(), request.getRequestURI());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("INVALID_INPUT", "요청 값이 올바르지 않습니다. 파라미터를 확인해 주세요."));
+    }
+
+    // multipart 크기 상한(spring.servlet.multipart 11MB) 초과 → 400
+    // 컨트롤러 도달 전에 터지는 예외라 ImageService의 IMAGE_002 검증이 못 잡는 구간의 안전망.
+    // (11MB로 여유를 둔 이유: 10MB 초과분은 비즈니스 검증 IMAGE_002가 먼저 걸리도록 — IMAGE_FLOW 4장)
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSize(
+            MaxUploadSizeExceededException e, HttpServletRequest request) {
+        log.warn("업로드 크기 상한 초과 - path: {} {}", request.getMethod(), request.getRequestURI());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("INVALID_INPUT", "파일 크기가 허용 범위를 초과했습니다."));
     }
 
     // DB 무결성 제약 위반 (유니크 동시 충돌 등)

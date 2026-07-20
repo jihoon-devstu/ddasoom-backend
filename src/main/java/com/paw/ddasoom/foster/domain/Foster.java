@@ -108,36 +108,43 @@ public class Foster extends BaseTimeEntity {
     this.status = FosterStatus.PENDING;
 }
 
-  // 리치도메인 메서드 -> 임시보호신청 soft delete 처리(deletedAt 기준 삭제)
+  // 리치 도메인 메서드 -> 임시보호 신청 soft delete 처리
   public void softDelete() {
     if (this.deletedAt != null) {
       throw new FosterException(FosterErrorCode.ALREADY_DELETED_FOSTER);
     }
 
-    validateUserModifiableStatus(FosterErrorCode.INVALID_FOSTER_DELETE_STATUS);
+    validateUserDeletableStatus();
 
     this.deletedAt = LocalDateTime.now();
-  } 
-  // 리치도메인 메서드 -> 유저 신청 내용 수정 (PENDING 상태에서 age/job/message만 수정)
+  }
+  // 리치 도메인 메서드 -> 유저 신청 내용 수정
   public void updateUserRequest(String age, String job, String message) {
     if (this.deletedAt != null) {
       throw new FosterException(FosterErrorCode.ALREADY_DELETED_FOSTER);
     }
 
-    validateUserModifiableStatus(FosterErrorCode.INVALID_FOSTER_UPDATE_STATUS);
+    validateUserUpdatableStatus();
 
     this.age = age;
     this.job = job;
     this.message = message;
   }
+  // 신청 대기 상태에서만 사용자 수정 가능
+  private void validateUserUpdatableStatus() {
+    if (this.status != FosterStatus.PENDING) {
+      throw new FosterException(FosterErrorCode.INVALID_FOSTER_UPDATE_STATUS);
+    }
+  }
   // 수정 및 삭제시 PENDING,REJECTED 상태 체크 검증 메서드
-  private void validateUserModifiableStatus(FosterErrorCode errorCode) {
-    boolean isModifiable =
+  // 신청 대기 또는 거절 상태에서만 사용자 삭제 가능
+  private void validateUserDeletableStatus() {
+    boolean isDeletable =
         this.status == FosterStatus.PENDING ||
         this.status == FosterStatus.REJECTED;
 
-    if (!isModifiable) {
-      throw new FosterException(errorCode);
+    if (!isDeletable) {
+      throw new FosterException(FosterErrorCode.INVALID_FOSTER_DELETE_STATUS);
     }
   }
   // 관리자 임시보호요청 삭제 

@@ -22,7 +22,7 @@ public enum FosterErrorCode implements ErrorCode {
   INVALID_FOSTER_PERIOD(HttpStatus.BAD_REQUEST,"FOSTER_008","임시보호 기간 정보가 올바르지 않습니다."),
   DUPLICATE_FOSTER_APPLICATION(HttpStatus.BAD_REQUEST,"FOSTER_009","이미 진행 중인 임시보호 신청이 있습니다. 종료·거절·삭제된 신청은 다시 신청할 수 있습니다."),
   ALREADY_FOSTERED_ANIMAL(HttpStatus.BAD_REQUEST,"FOSTER_010","이미 임시보호 중인 동물은 신청할 수 없습니다."),
-  INVALID_FOSTER_UPDATE_STATUS(HttpStatus.BAD_REQUEST,"FOSTER_011","신청 대기 또는 신청 거절 상태에서만 임시보호 신청을 수정할 수 있습니다."),
+  INVALID_FOSTER_UPDATE_STATUS(HttpStatus.BAD_REQUEST,"FOSTER_011","신청 대기에서만 임시보호 신청을 수정할 수 있습니다."),
   INVALID_FOSTER_DELETE_STATUS(HttpStatus.BAD_REQUEST,"FOSTER_012","신청 대기 또는 신청 거절 상태에서만 임시보호 신청을 삭제할 수 있습니다."),
   INCOMPLETE_FOSTER_ADMIN_UPDATE(HttpStatus.BAD_REQUEST,"FOSTER_013","관리자 수정 시 기존 답변과 임시보호 일정은 모두 포함해서 보내야 합니다."),
   REQUIRED_FOSTER_SCHEDULE(HttpStatus.BAD_REQUEST,"FOSTER_014","현재 임시보호 상태에 필요한 일정 정보가 누락되었습니다.");

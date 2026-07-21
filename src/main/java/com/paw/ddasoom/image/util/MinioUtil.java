@@ -87,6 +87,9 @@ public class MinioUtil {
     /**
      * 파일을 ownerType에 맞는 버킷에 업로드하고 객체 키를 반환한다.
      *
+     * @param file      업로드할 파일 (검증은 호출자인 ImageService에서 완료됨을 전제)
+     * @param ownerType 소유자 유형 — 버킷 선택 기준
+     * @return MinIO 객체 키 ({yyyy}/{MM}/{용도}/{uuid}.{확장자})
      * @throws ImageException IMAGE_005 — MinIO 통신 실패
      */
     public String upload(MultipartFile file, OwnerType ownerType) {
@@ -118,6 +121,9 @@ public class MinioUtil {
      * <p>공개: 영구 정적 URL (본문에 박히는 URL이라 만료되면 안 됨 — IMAGE_FLOW 부록 1)
      * <p>비공개: Presigned URL 30분 (QNA 개인정보 보호)
      *
+     * @param ownerType 소유자 유형 — 공개/비공개 분기 기준
+     * @param objectKey MinIO 객체 키
+     * @return 접근 가능한 URL (공개=영구, 비공개=30분 만료)
      * @throws ImageException IMAGE_005 — Presigned URL 발급 실패
      */
     public String getUrl(OwnerType ownerType, String objectKey) {
@@ -127,6 +133,12 @@ public class MinioUtil {
         return createPresignedUrl(objectKey);
     }
 
+    /**
+     * 버킷이 없으면 생성한다. 이미 존재하면 아무 것도 하지 않는다 (멱등).
+     *
+     * @param bucket 생성 대상 버킷명
+     * @throws Exception MinIO SDK checked 예외 — 호출자(initBuckets)가 일괄 처리
+     */
     private void createBucketIfNotExists(String bucket) throws Exception {
         boolean exists = minioClient.bucketExists(
                 BucketExistsArgs.builder().bucket(bucket).build());
@@ -136,11 +148,25 @@ public class MinioUtil {
         }
     }
 
+    /**
+     * ownerType의 공개 여부로 버킷을 선택한다.
+     *
+     * @param ownerType 소유자 유형
+     * @return 공개면 public 버킷, 비공개면 private 버킷
+     */
     private String selectBucket(OwnerType ownerType) {
         return ownerType.isPublic() ? publicBucket : privateBucket;
     }
 
-    // 비공개 버킷 전용 — 만료/서명 실패 가능성이 있는 유일한 URL 경로라 try를 여기로 한정
+    /**
+     * 비공개 버킷 전용 Presigned URL(30분)을 발급한다.
+     *
+     * <p>만료/서명 실패 가능성이 있는 유일한 URL 경로라 try를 이 메서드로 한정.
+     *
+     * @param objectKey MinIO 객체 키
+     * @return 30분 만료 Presigned URL
+     * @throws ImageException IMAGE_005 — 발급 실패
+     */
     private String createPresignedUrl(String objectKey) {
         try {
             return minioClient.getPresignedObjectUrl(
@@ -157,8 +183,16 @@ public class MinioUtil {
         }
     }
 
-    // 키 형식: {MM}{yyyy}//{용도}/{uuid}.{확장자} — 기간별 백업/운영 관리 용이 (IMAGE_FLOW 부록 1)
-    // 확장자 검증은 ImageService의 파일 검증에서 upload 호출 전에 완료됨을 전제로 함
+    /**
+     * 객체 키를 생성한다. 형식: {yyyy}/{MM}/{용도}/{uuid}.{확장자}
+     * — 기간별 백업/운영 관리 용이 (IMAGE_FLOW 부록 1)
+     *
+     * <p>확장자 검증은 ImageService의 파일 검증에서 upload 호출 전에 완료됨을 전제로 한다.
+     *
+     * @param ownerType        소유자 유형 — 소문자로 변환해 "용도" 경로에 사용
+     * @param originalFileName 원본 파일명 — 확장자 추출용
+     * @return 생성된 객체 키
+     */
     private String createObjectKey(OwnerType ownerType, String originalFileName) {
         LocalDate now = LocalDate.now();
         String extension = extractExtension(originalFileName);
@@ -172,6 +206,12 @@ public class MinioUtil {
         );
     }
 
+    /**
+     * 파일명에서 확장자를 소문자로 추출한다. (예: "photo.JPG" → "jpg")
+     *
+     * @param fileName 원본 파일명 — 확장자가 존재함을 전제 (ImageService 검증 완료 후 호출)
+     * @return 소문자 확장자
+     */
     private String extractExtension(String fileName) {
         return fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
     }

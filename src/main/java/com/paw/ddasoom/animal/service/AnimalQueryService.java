@@ -106,7 +106,7 @@ public class AnimalQueryService {
       animal -> AnimalListPageResponse.from(animal, true));
   }
 
-  // 이번 페이지 동물들 중 내가 좋아요 한 id 집합 (비로그인/빈 페이지면 빈 집함, N+1 방지)
+  // 이번 페이지 동물들 중 내가 좋아요 한 id 집합 (비로그인/빈 페이지면 빈 집합, N+1 방지)
   private Set<Long> resolveLikedIds(List<Animal> animals, Long memberId) {
 
     if (memberId == null || animals.isEmpty()) {

@@ -315,6 +315,15 @@ public class FosterAdminService {
         fosterExtendAt,
         fosterCompleteAt
     );
+    
+
+    validateScheduleCompatibilityByStatus(
+        request.getStatus(),
+        fosterStartAt,
+        fosterEndAt,
+        fosterExtendAt,
+        fosterCompleteAt
+    );
 
     if (fosterStartAt != null && fosterEndAt != null && fosterStartAt.isAfter(fosterEndAt)) {
       throw new FosterException(FosterErrorCode.INVALID_FOSTER_PERIOD);
@@ -334,6 +343,54 @@ public class FosterAdminService {
         fosterStartAt.isAfter(fosterCompleteAt)
     ) {
       throw new FosterException(FosterErrorCode.INVALID_FOSTER_PERIOD);
+    }
+  }
+  /**
+   * 상태와 맞지 않는 일정 필드가 함께 저장되는 것을 방지한다.
+   *
+   * <p>
+   * PENDING, REJECTED: 일정 전체 없음
+   * FOSTERING: 시작일, 기본 종료일만 허용
+   * EXTENDED: 시작일, 기본 종료일, 연장일 허용
+   * ENDED: 시작일, 기본 종료일, 최종 종료일 필수.
+   * 기존 연장 이력이 있으면 연장일도 유지할 수 있다.
+   * </p>
+   */
+  private void validateScheduleCompatibilityByStatus(
+      FosterStatus status,
+      LocalDateTime fosterStartAt,
+      LocalDateTime fosterEndAt,
+      LocalDateTime fosterExtendAt,
+      LocalDateTime fosterCompleteAt
+  ) {
+    boolean hasAnySchedule =
+        fosterStartAt != null ||
+        fosterEndAt != null ||
+        fosterExtendAt != null ||
+        fosterCompleteAt != null;
+
+    switch (status) {
+      case PENDING, REJECTED -> {
+        if (hasAnySchedule) {
+          throw new FosterException(FosterErrorCode.INVALID_FOSTER_PERIOD);
+        }
+      }
+
+      case FOSTERING -> {
+        if (fosterExtendAt != null || fosterCompleteAt != null) {
+          throw new FosterException(FosterErrorCode.INVALID_FOSTER_PERIOD);
+        }
+      }
+
+      case EXTENDED -> {
+        if (fosterCompleteAt != null) {
+          throw new FosterException(FosterErrorCode.INVALID_FOSTER_PERIOD);
+        }
+      }
+
+      case ENDED -> {
+        // 연장 후 조기 종료가 가능하므로 fosterCompleteAt과 fosterExtendAt 비교는 하지 않는다.
+      }
     }
   }
 

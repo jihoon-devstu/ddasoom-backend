@@ -337,13 +337,6 @@ public class FosterAdminService {
       throw new FosterException(FosterErrorCode.INVALID_FOSTER_PERIOD);
     }
 
-    if (
-        fosterStartAt != null &&
-        fosterCompleteAt != null &&
-        fosterStartAt.isAfter(fosterCompleteAt)
-    ) {
-      throw new FosterException(FosterErrorCode.INVALID_FOSTER_PERIOD);
-    }
   }
   /**
    * 상태와 맞지 않는 일정 필드가 함께 저장되는 것을 방지한다.

@@ -70,33 +70,33 @@ public class AnimalLikeService {
   private void collectOverrides(String key, Long memberId, Map<Long, Boolean> out) {
     Map<Object, Object> entries = redisTemplate.opsForHash().entries(key); // 없는 키면 빈 맵
 
-    try {
-      for (Map.Entry<Object, Object> entry : entries.entrySet()) {
-        // key값을 가져옴
-        String fieldStr = (String) entry.getKey(); // "{animalId}:{memberId}"
-  
-        // ":"를 분기로 뒤에서부터 ":"의 인덱스값을 알아냄
-        int separatorIndex = fieldStr.lastIndexOf(":");
-  
-        // 잘못된 값 방어
-        if (separatorIndex < 0) {
-          continue;
-        }
-  
-        // 
+    for (Map.Entry<Object, Object> entry : entries.entrySet()) {
+      // key값을 가져옴
+      String fieldStr = (String) entry.getKey(); // "{animalId}:{memberId}"
+
+      // ":"를 분기로 뒤에서부터 ":"의 인덱스값을 알아냄
+      int separatorIndex = fieldStr.lastIndexOf(":");
+
+      // 잘못된 값 방어
+      if (separatorIndex < 0) {
+        continue;
+      }
+
+      try {
+        // memberId 파싱
         Long fieldMemberId = Long.parseLong(fieldStr.substring(separatorIndex + 1));
-        if (!fieldMemberId.equals(memberId)) {
+        if (fieldMemberId.equals(memberId) == false) {
           continue;
         }
   
         // animalId 파싱
         Long animalId = Long.parseLong(fieldStr.substring(0, separatorIndex));
-  
+
         // 값 "1"=좋아요, 그 외=취소 → 맵에 담기
         out.put(animalId, "1".equals(entry.getValue()));
+      } catch (NumberFormatException e) {
+        log.error("키값을 파싱하는 데 오류가 발생했습니다: {}", e);
       }
-    } catch (NumberFormatException e) {
-      log.error("key");
     }
   }
 

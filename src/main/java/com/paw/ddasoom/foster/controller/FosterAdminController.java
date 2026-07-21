@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.paw.ddasoom.common.dto.ApiResponse;
 import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.common.security.CustomUserDetails;
+import com.paw.ddasoom.foster.domain.FosterManagementScope;
 import com.paw.ddasoom.foster.domain.FosterStatus;
 import com.paw.ddasoom.foster.dto.request.FosterAdminUpdateRequest;
 import com.paw.ddasoom.foster.dto.response.FosterAdminDetailResponse;
@@ -42,9 +43,10 @@ public class FosterAdminController {
 
       return ResponseEntity.ok(ApiResponse.success(response));
     }
-  /** 관리자 임시보호신청 조회(리스트) */
+  /** 관리자 임시보호 신청 목록 조회 */
   @GetMapping
   public ResponseEntity<ApiResponse<PageResponse<FosterAdminListResponse>>> getFosterList(
+      @RequestParam("scope") FosterManagementScope scope,
       @RequestParam(value = "status", required = false) FosterStatus status,
       @RequestParam(value = "activeOnly", defaultValue = "false") boolean activeOnly,
       @RequestParam(value = "includeDeleted", defaultValue = "false") boolean includeDeleted,
@@ -54,14 +56,16 @@ public class FosterAdminController {
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
       @RequestParam(value = "page", defaultValue = "0") int page,
       @RequestParam(value = "size", defaultValue = "20") int size
-  ){
+  ) {
     PageResponse<FosterAdminListResponse> response = fosterAdminService.getFosterList(
-      status,
-      activeOnly,
-      includeDeleted,
-      startDate,
-      endDate,
-      PageRequest.of(page, size));
+        scope,
+        status,
+        activeOnly,
+        includeDeleted,
+        startDate,
+        endDate,
+        PageRequest.of(page, size)
+    );
 
     return ResponseEntity.ok(ApiResponse.success(response));
   }

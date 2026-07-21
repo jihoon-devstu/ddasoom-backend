@@ -6,6 +6,8 @@ import com.paw.ddasoom.board.dto.request.CommentCreateRequest;
 import com.paw.ddasoom.board.dto.request.CommentUpdateRequest;
 import com.paw.ddasoom.board.dto.response.CommentResponse;
 import com.paw.ddasoom.board.dto.projection.CommentListProjection;
+import com.paw.ddasoom.board.dto.projection.MyCommentListProjection;
+import com.paw.ddasoom.board.dto.response.MyCommentResponse;
 import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.board.exception.BoardErrorCode;
 import com.paw.ddasoom.board.exception.BoardException;
@@ -58,6 +60,15 @@ public class PostCommentService {
                 postCommentRepository.findCommentsByPostId(postId, pageable);
 
         return PageResponse.of(result, CommentResponse::from);
+    }
+
+    /** 마이페이지 "내가 쓴 댓글" 목록 — 원글이 삭제된 댓글은 쿼리에서 제외됨 (repository 주석 참고) */
+    @Transactional(readOnly = true)
+    public PageResponse<MyCommentResponse> getMyComments(Long memberId, Pageable pageable) {
+        Page<MyCommentListProjection> result =
+                postCommentRepository.findMyComments(memberId, pageable);
+
+        return PageResponse.of(result, MyCommentResponse::from);
     }
 
     @Transactional

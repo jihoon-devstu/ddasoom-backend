@@ -69,6 +69,6 @@ public class SecurityConstants {
       // "/api/animals/*/likes",
 
       // ── 임보 (경우) — 본인 확인 후 추가 ──
-      // "/api/fosters/**",
+      "/api/fosters/**",
   };
 }

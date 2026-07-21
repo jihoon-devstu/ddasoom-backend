@@ -20,6 +20,7 @@ import com.paw.ddasoom.common.security.CustomUserDetails;
 import com.paw.ddasoom.foster.domain.FosterStatus;
 import com.paw.ddasoom.foster.dto.request.FosterCreateRequest;
 import com.paw.ddasoom.foster.dto.request.FosterUpdateRequest;
+import com.paw.ddasoom.foster.dto.response.FosterPendingApplicationResponse;
 import com.paw.ddasoom.foster.dto.response.FosterUserDetailResponse;
 import com.paw.ddasoom.foster.dto.response.FosterUserListResponse;
 import com.paw.ddasoom.foster.service.FosterService;
@@ -33,6 +34,17 @@ import lombok.RequiredArgsConstructor;
 public class FosterController {
 
   private final FosterService fosterService;
+
+  /** 현재 사용자의 해당 동물 임시보호 신청 여부 조회 */
+  @GetMapping("/my/pending")
+  public ResponseEntity<ApiResponse<FosterPendingApplicationResponse>> getPendingApplicationStatus(
+    @AuthenticationPrincipal CustomUserDetails userDetails,
+    @RequestParam Long animalId ) {
+      FosterPendingApplicationResponse response = fosterService.getFosterPendingApplicationStatus(
+        userDetails.getMemberId(), animalId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 
   /** 유저 임시보호신청 작성 */
   @PostMapping

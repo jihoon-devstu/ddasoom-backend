@@ -8,8 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.paw.ddasoom.board.service.AdminPostService;
 import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.member.domain.Member;
-import com.paw.ddasoom.member.exception.MemberErrorCode;
-import com.paw.ddasoom.member.exception.MemberException;
 import com.paw.ddasoom.member.repository.MemberRepository;
 import com.paw.ddasoom.member.service.AdminMemberService;
 import com.paw.ddasoom.report.domain.Report;
@@ -154,17 +152,4 @@ public class ReportService {
     }
   }
 
-  /**
-   * 이미 탈퇴한 회원이면 no-op — Member.softDelete()가 MEMBER_003을 던지므로
-   * 같은 회원 대상 신고 2건 순차 승인 시 두 번째 승인이 터지는 것을 방지.
-   */
-  // 4) 회원 숨김 = 기존 강제 탈퇴 경로(adminMemberService.forceWithdraw) 재사용
-  private void hideMember(Long targetMemberId) {
-    Member target = memberRepository.findById(targetMemberId)
-            .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
-    if (target.isDeleted()) {
-      return;
-    }
-    adminMemberService.forceWithdraw(targetMemberId);
-  }
 }

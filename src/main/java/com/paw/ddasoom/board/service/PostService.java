@@ -21,12 +21,14 @@ import com.paw.ddasoom.member.exception.MemberException;
 import com.paw.ddasoom.member.repository.MemberRepository;
 import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.common.util.HtmlSanitizer;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,9 +50,17 @@ public class PostService {
             BoardType.CAT_INFO, CAT_INFO_CATEGORIES
     );
 
+    /**
+     * 조회수 중복 집계 방지 창(window). 같은 회원이 이 시간 안에 같은 글을 여러 번 열어도 1회만 집계.
+     * 30분 = 목록↔상세 왕복·새로고침 연타로 인한 인플레는 막되, 하루 여러 번의 정상 재방문은 각각 집계.
+     * (프론트의 staleTime 캐시 대신 서버가 집계 기준을 갖게 하는 것이 목적)
+     */
+    private static final Duration VIEW_DEDUP_TTL = Duration.ofMinutes(1);
+
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
     private final ImageService imageService;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Transactional
     public Long createPost(Long memberId, PostCreateRequest request) {
@@ -109,12 +119,24 @@ public class PostService {
     }
 
     @Transactional  // readOnly 아님 — 조회수 증가(쓰기) 포함
-    public PostDetailResponse getPostDetail(Long postId) {
+    public PostDetailResponse getPostDetail(Long postId, Long viewerId) {
         Post post = getPost(postId);
-        post.increaseViewCount();  // dirty checking으로 UPDATE 반영
+
+        // 뷰어 단위 중복 제거: 키가 새로 세팅될 때(=TTL 창 내 첫 조회)만 조회수 증가.
+        // setIfAbsent 원자 연산이라 멀티탭 동시 조회 경합에도 1회만 통과.
+        Boolean firstView = redisTemplate.opsForValue()
+                .setIfAbsent(viewDedupKey(postId, viewerId), "1", VIEW_DEDUP_TTL);
+        if (Boolean.TRUE.equals(firstView)) {
+            post.increaseViewCount();  // dirty checking으로 UPDATE 반영
+        }
 
         List<ImageResponse> images = imageService.getImages(OwnerType.POST, postId);
         return PostDetailResponse.from(post, images);
+    }
+
+    // Redis 키: postView:{postId}:{memberId} (CONVENTIONS 3장 — 키 생성은 private 메서드로 모음)
+    private String viewDedupKey(Long postId, Long viewerId) {
+        return "postView:" + postId + ":" + viewerId;
     }
 
     @Transactional

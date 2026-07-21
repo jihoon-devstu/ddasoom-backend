@@ -2,6 +2,7 @@ package com.paw.ddasoom.board.repository;
 
 import com.paw.ddasoom.board.domain.BoardType;
 import com.paw.ddasoom.board.domain.Post;
+import com.paw.ddasoom.board.dto.projection.MyPostListProjection;
 import com.paw.ddasoom.board.dto.projection.PostListProjection;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,27 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             @Param("boardType") BoardType boardType,
             @Param("category") String category,
             @Param("keyword") String keyword,
+            Pageable pageable);
+
+    /**
+     * 마이페이지 "내가 쓴 글" 목록 — findPostList와 동일한 projection 전략(무거운 content 회피).
+     * 여러 보드의 글이 섞여 나오므로 boardType을 함께 조회(프론트 상세 경로 조립용),
+     * member 조인은 불필요(본인 글만 조회).
+     * boardType NULL = 전체 보드 조회 (탭 내 필터의 "전체"와 대응).
+     */
+    @Query("""
+    SELECT NEW com.paw.ddasoom.board.dto.projection.MyPostListProjection(
+        p.id, p.boardType, p.category, p.title, SUBSTRING(p.content, 1, 200),
+        p.viewCount, p.commentCount, p.createdAt)
+    FROM Post p
+    WHERE p.member.id = :memberId
+      AND (:boardType IS NULL OR p.boardType = :boardType)
+      AND p.deletedAt IS NULL
+    ORDER BY p.createdAt DESC
+    """)
+    Page<MyPostListProjection> findMyPosts(
+            @Param("memberId") Long memberId,
+            @Param("boardType") BoardType boardType,
             Pageable pageable);
 
     /**

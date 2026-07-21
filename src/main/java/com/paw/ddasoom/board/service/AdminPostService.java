@@ -3,8 +3,10 @@ package com.paw.ddasoom.board.service;
 import com.paw.ddasoom.board.domain.BoardType;
 import com.paw.ddasoom.board.domain.Post;
 import com.paw.ddasoom.board.domain.PostComment;
+import com.paw.ddasoom.board.dto.projection.AdminAllCommentListProjection;
 import com.paw.ddasoom.board.dto.projection.AdminCommentListProjection;
 import com.paw.ddasoom.board.dto.projection.AdminPostListProjection;
+import com.paw.ddasoom.board.dto.response.AdminAllCommentResponse;
 import com.paw.ddasoom.board.dto.response.AdminCommentResponse;
 import com.paw.ddasoom.board.dto.response.AdminPostDetailResponse;
 import com.paw.ddasoom.board.dto.response.AdminPostResponse;
@@ -118,6 +120,13 @@ public class AdminPostService {
                 postCommentRepository.findCommentsForAdmin(postId, pageable);
 
         return PageResponse.of(page, AdminCommentResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<AdminAllCommentResponse> getAllComments(Pageable pageable) {
+        Page<AdminAllCommentListProjection> page =
+                postCommentRepository.findAllCommentsForAdmin(pageable);
+        return PageResponse.of(page, AdminAllCommentResponse::from);
     }
 
     // ===== 강제삭제 =====

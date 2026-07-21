@@ -2,9 +2,11 @@ package com.paw.ddasoom.board.service;
 
 import com.paw.ddasoom.board.domain.BoardType;
 import com.paw.ddasoom.board.domain.Post;
+import com.paw.ddasoom.board.dto.projection.MyPostListProjection;
 import com.paw.ddasoom.board.dto.projection.PostListProjection;
 import com.paw.ddasoom.board.dto.request.PostCreateRequest;
 import com.paw.ddasoom.board.dto.request.PostUpdateRequest;
+import com.paw.ddasoom.board.dto.response.MyPostResponse;
 import com.paw.ddasoom.board.dto.response.PostDetailResponse;
 import com.paw.ddasoom.board.dto.response.PostResponse;
 import com.paw.ddasoom.board.exception.BoardErrorCode;
@@ -83,6 +85,27 @@ public class PostService {
 
         return PageResponse.of(page, projection ->
                 PostResponse.from(projection, thumbnailUrls.get(projection.getPostId())));
+    }
+
+    /**
+     * 마이페이지 "내가 쓴 글" 목록.
+     * boardType은 선택 필터 — null/빈 값이면 전체 보드 조회 (목록 필터는 생성/수정과 달리 엄격 검증 대상 아님,
+     * 단 값이 들어왔는데 미존재 enum이면 BOARD_003으로 규격 응답).
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<MyPostResponse> getMyPosts(Long memberId, String boardType, Pageable pageable) {
+        BoardType parsedBoardType =
+                boardType != null && !boardType.isBlank() ? parseBoardType(boardType) : null;
+        Page<MyPostListProjection> page =
+                postRepository.findMyPosts(memberId, parsedBoardType, pageable);
+
+        List<Long> postIds = page.getContent().stream()
+                .map(MyPostListProjection::getPostId)
+                .toList();
+        Map<Long, String> thumbnailUrls = imageService.getThumbnailUrls(OwnerType.POST, postIds);
+
+        return PageResponse.of(page, projection ->
+                MyPostResponse.from(projection, thumbnailUrls.get(projection.getPostId())));
     }
 
     @Transactional  // readOnly 아님 — 조회수 증가(쓰기) 포함

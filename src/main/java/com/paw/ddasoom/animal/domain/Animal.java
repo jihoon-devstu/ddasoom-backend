@@ -127,5 +127,4 @@ public class Animal extends BaseTimeEntity {
   public void updateFosteredStatus(boolean isFostered) {
     this.isFostered = isFostered;
   }
-
 }

@@ -104,7 +104,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     FROM Post p
     JOIN p.member m
     WHERE (:boardType IS NULL OR p.boardType = :boardType)
-      AND (:keyword IS NULL OR p.title LIKE CONCAT('%', :keyword, '%'))
+      AND (:keyword IS NULL
+           OR p.title LIKE CONCAT('%', :keyword, '%')
+           OR m.nickname LIKE CONCAT('%', :keyword, '%'))
     ORDER BY p.createdAt DESC
     """)
     Page<AdminPostListProjection> findPostsForAdmin(

@@ -1,11 +1,7 @@
 package com.paw.ddasoom.support.controller;
 
-import com.paw.ddasoom.support.service.NoticeService;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +20,16 @@ import org.springframework.web.bind.annotation.RestController;
 import com.paw.ddasoom.common.dto.ApiResponse;
 import com.paw.ddasoom.common.dto.PageResponse;
 import com.paw.ddasoom.common.security.CustomUserDetails;
+import com.paw.ddasoom.common.util.PageableSanitizer;
 import com.paw.ddasoom.support.dto.request.NoticeCreateRequest;
 import com.paw.ddasoom.support.dto.request.NoticePinReorderRequest;
 import com.paw.ddasoom.support.dto.request.NoticeUpdateRequest;
 import com.paw.ddasoom.support.dto.response.NoticeResponse;
 import com.paw.ddasoom.support.dto.response.NoticeSummaryResponse;
+import com.paw.ddasoom.support.service.NoticeService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/admin/notices")
@@ -41,7 +42,9 @@ public class AdminNoticeController {
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<NoticeSummaryResponse>>> getAdminNotices(
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(ApiResponse.success(noticeService.getAdminNotices(pageable)));
+        Pageable safePageable = PageableSanitizer.sanitize(pageable,
+                Sort.by(Sort.Direction.DESC, "createdAt"), "createdAt", "pinOrder");
+        return ResponseEntity.ok(ApiResponse.success(noticeService.getAdminNotices(safePageable)));
     }
 
     // 2. 공지사항 상세 조회

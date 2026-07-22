@@ -15,7 +15,7 @@ import com.paw.ddasoom.animal.domain.AnimalLike;
  * animal_like 읽기 전용 레포지토리.
  * 쓰기(insert/delete/카운트 갱신)는 Write-Behind 배치의 AnimalLikeJdbcRepository가 담당하고,
  * 여기서는 "내가 좋아요했는지 / 내가 좋아요한 동물 목록" 같은 조회만 다룬다.
- * ⚠️ Redis dirty(미flush분)는 반영하지 않는 커밋 상태 기준 — 최대 flush 주기(약 10초)만큼 지연될 수 있다.
+ * Redis dirty(미flush분)는 반영하지 않는 커밋 상태 기준 — 최대 flush 주기(약 10초)만큼 지연될 수 있다.
  */
 public interface AnimalLikeRepository extends JpaRepository<AnimalLike, Long> {
 
@@ -37,6 +37,4 @@ public interface AnimalLikeRepository extends JpaRepository<AnimalLike, Long> {
   @Query("select al.animal from AnimalLike al "
     + "where al.member.id = :memberId order by al.createdAt desc")
   Page<Animal> findLikedAnimals(@Param("memberId") Long memberId, Pageable pageable);
-
-
 }

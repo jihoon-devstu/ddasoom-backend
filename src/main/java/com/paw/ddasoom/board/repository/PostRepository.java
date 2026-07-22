@@ -107,7 +107,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
       AND (:keyword IS NULL
            OR p.title LIKE CONCAT('%', :keyword, '%')
            OR m.nickname LIKE CONCAT('%', :keyword, '%'))
-    ORDER BY p.createdAt DESC
     """)
     Page<AdminPostListProjection> findPostsForAdmin(
             @Param("boardType") BoardType boardType,

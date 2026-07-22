@@ -60,6 +60,22 @@ public class SecurityConstants {
   };
 
   /**
+   * 비로그인도 "조회(GET)만" 허용 — 쓰기(POST/PATCH/DELETE)는 같은 경로라도 잠긴다.
+   * SecurityConfig에서 {@code HttpMethod.GET}과 함께 매칭되므로, 여기 등록한 경로의
+   * 쓰기 요청은 뒤의 USER_URIS 규칙으로 자연히 떨어진다.
+   *
+   * ⚠️ 개인화 조회 경로(/my 등)를 와일드카드로 삼키지 않도록 주의할 것.
+   *    (예: "/api/posts/*" 는 "/api/posts/my" 도 매칭 — SecurityConfig에서 /my를 먼저 잠가둠)
+   */
+  public static final String[] PUBLIC_GET_URIS = {
+          // ── 게시판 (창호) ──
+          // 커뮤니티 열람은 비로그인 공개, 작성/수정/삭제는 USER 전용.
+          "/api/posts",                // 목록 조회 (boardType 쿼리 파라미터로 3개 보드 공용)
+          "/api/posts/*",              // 상세 조회 — 한 세그먼트만 매칭 (/api/posts/{postId})
+          "/api/posts/*/comments",     // 댓글 목록 조회
+  };
+
+  /**
    * USER/ADMIN 전용 — GUEST(소셜 가입 후 추가정보 미입력, nickname=NULL) 차단.
    * "로그인 필요 + GUEST는 안 됨"인 쓰기/개인화 API는 전부 여기로.
    */
@@ -69,10 +85,9 @@ public class SecurityConstants {
           "/api/reports/**",   // 신고 (도메인 선등록 — 컨트롤러 구현 시 @RequestMapping 값과 일치 재확인)
 
           // ── 게시판 (창호) ──
-          // 커뮤니티는 "로그인 전용" 정책으로 확정 — 목록/상세도 로그인 필요.
-          // 근거: 상세 조회수 중복 제거가 뷰어 memberId(postView:{postId}:{memberId}) 전제로 설계돼 있어
-          //       비로그인 조회를 허용하면 dedup 키를 잡을 수 없다. (공개 전환 시 이 로직부터 재설계 필요)
-          "/api/posts/**",     // 게시글·댓글 전체 (목록/상세/작성/수정/삭제 — GUEST 차단)
+          // 조회(GET 목록/상세/댓글목록)는 PUBLIC_GET_URIS로 공개, 그 외 메서드는 여기서 USER 전용으로 잠근다.
+          // SecurityConfig에서 GET permitAll 규칙이 이 규칙보다 "먼저" 선언돼 있어야 성립 — 순서 변경 금지.
+          "/api/posts/**",     // 작성/수정/삭제 + 개인화 조회(/my) — GUEST 차단
 
           // ── 이미지 업로드 (창호) ──
           // 업로드 주체는 게시글/문의 작성자와 동일 → 게시판과 같은 정책. ADMIN(공지 이미지)도 통과.

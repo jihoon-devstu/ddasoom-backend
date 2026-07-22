@@ -48,7 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>⚠️ {@link #forceDeletePost(Long)} / {@link #forceDeleteComment(Long)}는 신고 도메인이 재사용한다.
  * ReportService.hideTarget()의 POST / POST_COMMENT 분기가 이 두 메서드에 위임하도록 연결된다
- * (회원 제재를 adminMemberService.forceWithdraw에 위임하는 것과 대칭).
+ * (회원 제재를 adminMemberService.hideMember에 위임하는 것과 대칭).
  */
 @Service
 @RequiredArgsConstructor

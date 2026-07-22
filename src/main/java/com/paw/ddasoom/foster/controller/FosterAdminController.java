@@ -157,7 +157,9 @@ public class FosterAdminController {
         includeDeleted,
         startDate,
         endDate,
-        PageableSanitizer.of(page, size)
+        // ⚠️ 이 화면은 아직 클라이언트 테이블 방식(전체 로드 후 브라우저에서 검색·정렬·페이징)이라
+        //    일반 상한(50)으로는 목록이 잘린다. 서버 페이징 전환 전까지 전용 상한을 적용한다.
+        PageableSanitizer.of(page, size, PageableSanitizer.CLIENT_TABLE_MAX_SIZE)
     );
 
     return ResponseEntity.ok(ApiResponse.success(response));

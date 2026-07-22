@@ -1,5 +1,8 @@
 package com.paw.ddasoom.member.controller;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,20 +45,26 @@ public class AdminMemberController {
                 관리자용 회원 목록. 이메일/닉네임 부분일치 검색과 역할 필터를 지원하며 가입일 최신순 정렬입니다.
                 - keyword: 이메일 또는 닉네임 부분일치 (미지정 시 전체)
                 - role: GUEST/USER/ADMIN 필터 (미지정 시 전체)
-                - 인가: ADMIN""")
+                - 인가: ADMIN
+                - status: ACTIVE/HIDDEN/DELETED 필터 (미지정 시 전체)
+                - sort: id, email, nickname, role, status, createdAt 중 선택 (예: ?sort=nickname,asc""")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "ADMIN 권한 아님")
     })
+
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<AdminMemberResponse>>> getMembers(
             @RequestParam(name = "keyword", required = false) String keyword,
             @RequestParam(name = "role", required = false) Role role,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size) {
-
-        return ResponseEntity.ok(ApiResponse.success(
-                adminMemberService.getMembers(keyword, role, PageableSanitizer.of(page, size))));
+            @RequestParam(name = "status", required = false) String status,
+            @PageableDefault(size = 20) Pageable pageable) {
+        // 정렬 화이트리스트 — "status"는 활성/숨김/탈퇴 파생 정렬(QueryDSL CASE로 처리)
+        Pageable safePageable = PageableSanitizer.sanitize(pageable,
+                Sort.by(Sort.Direction.DESC, "createdAt"),
+                "id", "email", "nickname", "role", "status", "createdAt");
+        return ResponseEntity.ok(ApiResponse.success("회원 목록을 조회했습니다.",
+                adminMemberService.getMembers(keyword, role, status, safePageable)));
     }
 
     /** 회원 상세 — 기본정보 + 소셜 연동 + 최근 로그인 이력 5건 */

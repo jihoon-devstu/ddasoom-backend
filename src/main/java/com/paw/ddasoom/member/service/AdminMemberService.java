@@ -46,13 +46,15 @@ public class AdminMemberService {
   private final JwtUtil jwtUtil;
 
 
-  /** 목록 — 탈퇴 회원 포함 전체. 상태 구분은 응답의 deletedAt/status로 프론트가 표시 */
-  @Transactional(readOnly = true)
-  public PageResponse<AdminMemberResponse> getMembers(String keyword, Role role, Pageable pageable) {
-      // 빈 문자열 keyword는 null로 정규화 (JPQL 조건 미적용 — "빈 검색 = 전체"가 되게)
-      String normalizedKeyword = (keyword == null || keyword.isBlank()) ? null : keyword;
-
-      Page<Member> page = memberRepository.searchForAdmin(normalizedKeyword, role, pageable);
+  /**
+   * 관리자 회원 목록 — 검색·필터·정렬·페이징을 모두 서버에서 처리한다.
+   * 정렬은 컨트롤러가 PageableSanitizer로 화이트리스트를 통과시킨 Pageable을 그대로 넘겨받는다.
+   *
+   * @param status 상태 필터 "ACTIVE"/"HIDDEN"/"DELETED" (null이면 전체)
+   */
+  public PageResponse<AdminMemberResponse> getMembers(String keyword, Role role, String status, Pageable pageable) {
+      // 빈 문자열 정규화는 Impl의 StringUtils.hasText가 담당 — 여기서는 그대로 위임한다
+      Page<Member> page = memberRepository.searchForAdmin(keyword, role, status, pageable);
       return PageResponse.of(page, AdminMemberResponse::from);
   }
 

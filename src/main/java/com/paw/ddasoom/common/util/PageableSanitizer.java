@@ -26,26 +26,41 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>⚠️ <b>적용 대상은 "클라이언트 요청" 페이징뿐이다.</b> 서버가 외부 공공 API를 순회할 때 쓰는
  * 페이지 크기(예: AnimalFetchService의 numOfRows=1000, 8천 건 이상 적재)는 사용자 입력이 아니므로
- * 이 유틸을 적용하지 않는다 — 적용하면 동기화가 50건에서 잘린다.
+ * 이 유틸을 적용하지 않는다 — 적용하면 동기화가 상한에서 잘린다.
  */
 @Slf4j
 public final class PageableSanitizer {
 
-  /** 목록 조회 1회 최대 건수. 화면 최대 노출(9~20)의 여유분이자 대량 조회 차단선 */
+    /** 일반 목록의 1회 최대 건수. 화면 최대 노출(9~20)의 여유분이자 대량 조회 차단선 */
     public static final int MAX_SIZE = 50;
+
+    /**
+     * 클라이언트 테이블(전체를 받아 브라우저에서 검색·정렬·페이징) 화면 전용 상한.
+     *
+     * <p>서버 페이징으로 전환한 화면은 이 값이 필요 없다(한 번에 10~20건).
+     * 아직 전환하지 않은 화면만 사용한다 — "무제한"이 아니라 용도에 맞는 상한을 별도로 둔 것.
+     * ⚠️ 데이터가 이 값에 근접하면 해당 화면을 서버 페이징으로 전환해야 한다(알려진 한계).
+     */
+    public static final int CLIENT_TABLE_MAX_SIZE = 500;
+
     private static final int MIN_SIZE = 1;
 
     private PageableSanitizer() {   // 유틸 클래스 — 인스턴스화 금지
     }
 
     /**
-     * {@code @PageableDefault Pageable}용 — 정렬 화이트리스트 + size 클램프.
+     * {@code @PageableDefault Pageable}용 — 정렬 화이트리스트 + size 클램프(일반 상한).
      *
      * @param pageable         클라이언트가 보낸 원본
      * @param defaultSort      허용된 정렬이 하나도 없을 때 대체할 기본 정렬
      * @param allowedSortProps 허용 프로퍼티(엔티티 필드명). 비우면 정렬을 전부 기본값으로 강제
      */
     public static Pageable sanitize(Pageable pageable, Sort defaultSort, String... allowedSortProps) {
+        return sanitize(pageable, MAX_SIZE, defaultSort, allowedSortProps);
+    }
+
+    /** {@link #sanitize(Pageable, Sort, String...)}의 상한 지정 버전 */
+    public static Pageable sanitize(Pageable pageable, int maxSize, Sort defaultSort, String... allowedSortProps) {
         Set<String> allowed = Arrays.stream(allowedSortProps).collect(Collectors.toSet());
 
         List<Sort.Order> kept = new ArrayList<>();
@@ -59,7 +74,7 @@ public final class PageableSanitizer {
         }
 
         Sort safeSort = kept.isEmpty() ? defaultSort : Sort.by(kept);
-        return PageRequest.of(clampPage(pageable.getPageNumber()), clampSize(pageable.getPageSize()), safeSort);
+        return PageRequest.of(clampPage(pageable.getPageNumber()), clampSize(pageable.getPageSize(), maxSize), safeSort);
     }
 
     /**
@@ -68,15 +83,19 @@ public final class PageableSanitizer {
      * (page 음수/size 0은 PageRequest.of가 IllegalArgumentException을 던져 500이 되므로 함께 클램프)
      */
     public static Pageable of(int page, int size) {
-        return PageRequest.of(clampPage(page), clampSize(size));
+        return of(page, size, MAX_SIZE);
     }
 
-    private static int clampSize(int size) {
-        return Math.min(Math.max(size, MIN_SIZE), MAX_SIZE);
+    /** {@link #of(int, int)}의 상한 지정 버전 — 클라이언트 테이블 화면용 */
+    public static Pageable of(int page, int size, int maxSize) {
+        return PageRequest.of(clampPage(page), clampSize(size, maxSize));
+    }
+
+    private static int clampSize(int size, int maxSize) {
+        return Math.min(Math.max(size, MIN_SIZE), maxSize);
     }
 
     private static int clampPage(int page) {
         return Math.max(page, 0);
     }
-
 }

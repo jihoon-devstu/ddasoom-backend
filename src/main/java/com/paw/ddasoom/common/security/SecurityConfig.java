@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -34,23 +35,23 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  private final CorsProperties corsProperties;
-  private final AuthJwtTokenFilter authJwtTokenFilter;
-  private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-  private final CustomAccessDeniedHandler customAccessDeniedHandler;
-  private final CustomOAuth2UserService customOAuth2UserService;
-  private final OAuth2SuccessHandler oAuth2SuccessHandler;
-  private final OAuth2FailureHandler oAuth2FailureHandler;
+    private final CorsProperties corsProperties;
+    private final AuthJwtTokenFilter authJwtTokenFilter;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
 
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        //CORS 설정 - 보안 필터에서 허용
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        // CSRF 비활성: 인증을 Authorization 헤더(Bearer)로 하므로 쿠키 자동전송 기반 CSRF가 성립 안 함.
-        // (RT는 쿠키지만 SameSite=Lax + reissue/logout 전용 Path라 CSRF 표면이 최소)
-        .csrf(csrf -> csrf.disable())
-        //경로별 인가 작업
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                //CORS 설정 - 보안 필터에서 허용
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // CSRF 비활성: 인증을 Authorization 헤더(Bearer)로 하므로 쿠키 자동전송 기반 CSRF가 성립 안 함.
+                // (RT는 쿠키지만 SameSite=Lax + reissue/logout 전용 Path라 CSRF 표면이 최소)
+                .csrf(csrf -> csrf.disable())
+                //경로별 인가 작업
                 .authorizeHttpRequests(authorize -> authorize
                         // ⚠️ requestMatchers는 선언 순서대로 매칭 — 구체적 경로(예외)를 넓은 경로보다 먼저!
                         // 순서를 바꾸면 규칙이 "조용히" 죽는다(에러 없이 잘못 매칭되므로 발견이 늦다).
@@ -62,6 +63,16 @@ public class SecurityConfig {
 
                         // 2. 공개 경로 (SecurityConstants에서 관리) — auth/oauth2/swagger 등
                         .requestMatchers(SecurityConstants.PUBLIC_URIS).permitAll()
+
+                        // 2-1. 개인화 조회 예외 — 반드시 2-2보다 먼저!
+                        //      "/api/posts/*"(2-2)가 "/api/posts/my"까지 삼키기 때문에, 여기서 먼저 잠가둔다.
+                        //      순서를 바꾸면 남의 로그인 없이 "내가 쓴 글"이 열린다.
+                        .requestMatchers(HttpMethod.GET, "/api/posts/my", "/api/posts/comments/my")
+                        .hasAnyRole("USER", "ADMIN")
+
+                        // 2-2. GET만 공개 (SecurityConstants.PUBLIC_GET_URIS)
+                        //      같은 경로의 POST/PATCH/DELETE는 여기 안 걸리고 4번 USER_URIS로 떨어져 잠긴다.
+                        .requestMatchers(HttpMethod.GET, SecurityConstants.PUBLIC_GET_URIS).permitAll()
 
                         // 3. 회원 리소스 — USER/ADMIN
                         .requestMatchers("/api/members/**").hasAnyRole("USER", "ADMIN")
@@ -76,7 +87,7 @@ public class SecurityConfig {
                         // 6. 그 외 전부 인증 필요 (미분류 = 잠금이 기본값)
                         //    단 authenticated는 로그인 여부만 검사 — GUEST 차단 필요 시 USER_URIS에 등록
                         .anyRequest().authenticated()
-                      )
+                )
                 // 우리는 JWT 기반이라 폼로그인·httpBasic·시큐리티 기본 로그아웃을 전부 끈다(자체 구현으로 대체)
                 .formLogin(auth -> auth.disable())
                 .httpBasic(auth -> auth.disable())
@@ -102,17 +113,17 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint)   // 401
                         .accessDeniedHandler(customAccessDeniedHandler))            // 403
-                
+
 
                 // 세션 미사용 — JWT라 서버가 세션 상태를 들지 않는다(수평 확장·무상태의 근거)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
-  }
-  
+    }
 
-      // 보안 필터에서 시큐리티에서 CORS 설정 처리
+
+    // 보안 필터에서 시큐리티에서 CORS 설정 처리
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

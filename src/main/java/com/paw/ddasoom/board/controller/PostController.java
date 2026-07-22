@@ -68,13 +68,19 @@ public class PostController {
         return ResponseEntity.ok(ApiResponse.success("게시글 목록을 조회했습니다.", response));
     }
 
-    /** 게시글 상세 조회 — 조회수는 뷰어(memberId) 단위로 중복 제거되어 집계됨 (PostService 참고) */
+
+    /**
+     * 게시글 상세 조회 — 비로그인도 열람 가능.
+     * 조회수는 뷰어(memberId) 단위로 중복 제거되어 집계되며, 비로그인 조회는 집계되지 않는다 (PostService 참고).
+     */
     @GetMapping("/{postId}")
     public ResponseEntity<ApiResponse<PostDetailResponse>> getPostDetail(
             @PathVariable(name = "postId") Long postId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
+        // 공개 경로라 비로그인 요청에서는 userDetails가 null로 들어온다.
+        Long viewerId = userDetails != null ? userDetails.getMemberId() : null;
         PostDetailResponse response =
-                postService.getPostDetail(postId, userDetails.getMemberId());
+                postService.getPostDetail(postId, viewerId);
         return ResponseEntity.ok(ApiResponse.success("게시글을 조회했습니다.", response));
     }
 

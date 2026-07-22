@@ -175,7 +175,7 @@ public class PostService {
      * <p>쓰기(조회수 UPDATE)를 포함하므로 {@code readOnly = true}가 아니다.
      *
      * @param postId   게시글 PK
-     * @param viewerId 뷰어 회원 PK (조회수 중복 제거 키의 식별자)
+     * @param viewerId 뷰어 회원 PK (조회수 중복 제거 키의 식별자). 비로그인이면 {@code null} — 조회수 미집계
      * @return 게시글 상세 응답 (본문 + 활성 이미지 목록)
      * @throws BoardException 게시글이 없거나 삭제되었을 때(POST_NOT_FOUND)
      */
@@ -183,12 +183,16 @@ public class PostService {
     public PostDetailResponse getPostDetail(Long postId, Long viewerId) {
         Post post = getPost(postId);
 
-        // 뷰어 단위 중복 제거: 키가 새로 세팅될 때(=TTL 창 내 첫 조회)만 조회수 증가.
-        // setIfAbsent 원자 연산이라 멀티탭 동시 조회 경합에도 1회만 통과.
-        Boolean firstView = redisTemplate.opsForValue()
-                .setIfAbsent(viewDedupKey(postId, viewerId), "1", VIEW_DEDUP_TTL);
-        if (Boolean.TRUE.equals(firstView)) {
-            post.increaseViewCount();  // dirty checking으로 UPDATE 반영
+        // 비로그인(viewerId == null)은 dedup 식별자가 없어 조회수를 집계하지 않는다.
+        // 익명을 집계하려면 IP 등 대체 키가 필요한데, 새로고침 어뷰징·공유망 부정확·개인정보 이슈가 있어 배제.
+        if (viewerId != null) {
+            // 뷰어 단위 중복 제거: 키가 새로 세팅될 때(=TTL 창 내 첫 조회)만 조회수 증가.
+            // setIfAbsent 원자 연산이라 멀티탭 동시 조회 경합에도 1회만 통과.
+            Boolean firstView = redisTemplate.opsForValue()
+                    .setIfAbsent(viewDedupKey(postId, viewerId), "1", VIEW_DEDUP_TTL);
+            if (Boolean.TRUE.equals(firstView)) {
+                post.increaseViewCount();  // dirty checking으로 UPDATE 반영
+            }
         }
 
         List<ImageResponse> images = imageService.getImages(OwnerType.POST, postId);

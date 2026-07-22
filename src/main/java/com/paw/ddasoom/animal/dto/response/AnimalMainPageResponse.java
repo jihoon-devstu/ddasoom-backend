@@ -7,7 +7,6 @@ import com.paw.ddasoom.animal.domain.AnimalKind;
 import lombok.Builder;
 
 @Builder
-// DTO 확인용
 public record AnimalMainPageResponse(
   long animalId,
   String abandonmentId,

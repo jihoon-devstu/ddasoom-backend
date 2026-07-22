@@ -27,9 +27,10 @@ public class AnimalFetchService {
 
   /**
    * 전체 데이터를 전체 페이지 매핑을 통해 저장
-   * @return 모든 동물 리스트
+   * @return 모든 동물 리스트 List<AnimalFetchResponse.AnimalItem>
    */
   public List<AnimalFetchResponse.AnimalItem> fetchAnimals() {
+
     List<AnimalFetchResponse.AnimalItem> allAnimals = new ArrayList<>();
 
     int pageNo = 1;
@@ -38,17 +39,13 @@ public class AnimalFetchService {
     while (true) {
         AnimalFetchResponse response = fetchPage(pageNo, numOfRows);
 
-        /**
-         * 데이터 null check
-         */
+        // body() null check
         if (response.response().body() == null) {
             log.warn("body가 null - pageNo: {}, resultCode 확인 필요", pageNo);
             break;
         }
 
-        /**
-         * 데이터 null check
-         */
+        // items() null check
         if (response.response().body().items() == null || response.response().body().items().item() == null) {
             log.info("items 없음(결과 0건 추정) - pageNo: {}", pageNo);
             break;
@@ -57,18 +54,27 @@ public class AnimalFetchService {
         List<AnimalFetchResponse.AnimalItem> items = response.response().body().items().item();
         allAnimals.addAll(items);
 
-        // 3. totalCount 꺼내기 전 null 및 공백 방어
+        // totalCount 꺼내기 전 null 및 공백 방어
         int totalCount = 0;
-        String totalCountStr = response.response().body().totalCount();
-        if (totalCountStr != null && !totalCountStr.isBlank()) {
-            totalCount = Integer.parseInt(totalCountStr.trim());
-        } else {
-            break; 
+        String totalCountStr;
+        
+        try {
+            totalCountStr = response.response().body().totalCount();
+
+            if (totalCountStr != null && !totalCountStr.isBlank()) {
+                totalCount = Integer.parseInt(totalCountStr.trim());
+            } else {
+                log.warn("totalCount가 비어있음 - pageNo: {}, 여기까지 수집된 데이터로 종료", pageNo);
+                break;
+            }
+            if ((long) pageNo * numOfRows >= totalCount) {
+                break;
+            }
+            pageNo++;
+        } catch (NumberFormatException e) {
+            log.warn("totalCount 형식이 잘못됐습니다: - pageNo: {}, 여기까지 수집된 데이터로 종료", pageNo, e);
+            break; // 이미 addAll된 데이터는 그대로 반환(부분 성공 허용)
         }
-        if ((long) pageNo * numOfRows >= totalCount) {
-            break;
-        }
-        pageNo++;
     }
     log.info("총 패치된 동물 수: {}", allAnimals.size());
     return allAnimals;
@@ -76,6 +82,9 @@ public class AnimalFetchService {
   
   /**
    * API에서 불러온 데이터를 페이지별로 매핑해서 저장
+   * @param pageNo
+   * @param numOfRows
+   * @return 페이지별 API에서 불러온 데이터 AnimalFetchResponse
    */
   private AnimalFetchResponse fetchPage(int pageNo, int numOfRows) {
     AnimalFetchResponse raw = restClient.get()

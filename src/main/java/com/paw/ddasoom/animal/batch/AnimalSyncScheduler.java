@@ -1,11 +1,10 @@
 package com.paw.ddasoom.animal.batch;
 
-import org.springframework.dao.DataAccessException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
- 
+
 import com.paw.ddasoom.animal.service.AnimalSyncService;
- 
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
  
@@ -34,9 +33,10 @@ public class AnimalSyncScheduler {
       // AnimalSyncService가 JDBC 벌크 upsert로 바뀌면서 건수(int)를 바로 반환한다.
       int savedCount = animalSyncService.syncAnimals();
       log.info("[AnimalSyncScheduler] 정기 동기화 완료 - {}건 저장/갱신", savedCount);
-    } catch (DataAccessException e) {
+    } catch (Exception e) {
       // 예외를 흡수하지 않으면 스케줄러 스레드가 죽어 이후 실행이 멈춘다.
       // 로그만 남기고 다음 주기에 다시 시도하도록 둔다.
+      // DataAccessException + AnimalException.API_NOT_FOUND + RestClientException 포함해 Exception으로 통일
       log.error("[AnimalSyncScheduler] 정기 동기화 실패 - 다음 주기에 재시도", e);
     }
   }

@@ -18,10 +18,10 @@ import lombok.RequiredArgsConstructor;
  * AnimalSyncService가 건별로 findByAbandonmentId 조회 후 save/dirty-checking 하던 방식(N+1)을
  * INSERT ... ON DUPLICATE KEY UPDATE 한 번(또는 배치 분할)으로 대체한다.
  *
- * ⚠️ like_count / is_fostered / created_at / updated_at 은 이 SQL이 절대 건드리지 않는다.
- *   - like_count, is_fostered: 다른 도메인(좋아요 배치, foster)이 소유한 캐시 컬럼 -> INSERT 시 DEFAULT(0/false)만 적용
- *   - created_at, updated_at: DB가 관리(DEFAULT / ON UPDATE CURRENT_TIMESTAMP(6)) -> SQL에서 값 세팅 안 함
- *   - nickname: UPDATE 절에 없음 -> 신규 INSERT일 때만 세팅, 기존 행이면 유지
+ * like_count / is_fostered / created_at / updated_at 은 이 SQL이 절대 건드리지 않는다.
+ * - like_count, is_fostered: 다른 도메인(좋아요 배치, foster)이 소유한 캐시 컬럼 -> INSERT 시 DEFAULT(0/false)만 적용
+ * - created_at, updated_at: DB가 관리(DEFAULT / ON UPDATE CURRENT_TIMESTAMP(6)) -> SQL에서 값 세팅 안 함
+ * - nickname: UPDATE 절에 없음 -> 신규 INSERT일 때만 세팅, 기존 행이면 유지
  */
 @Repository
 @RequiredArgsConstructor
@@ -59,9 +59,9 @@ public class AnimalSyncJdbcRepository {
  
     jdbcTemplate.batchUpdate(sql, items, BATCH_SIZE, (ps, item) -> {
       ps.setString(1, item.abandonmentId());
-      ps.setString(2, item.kind().name());       // AnimalKind enum -> "D"/"C" (VARCHAR(20) 컬럼)
+      ps.setString(2, item.kind().name());    // AnimalKind enum -> "D"/"C" (VARCHAR(20) 컬럼)
       ps.setString(3, item.nickname());
-      ps.setString(4, item.gender().name());      // AnimalGender enum -> "M"/"F"/"Q" (CHAR(1) 컬럼)
+      ps.setString(4, item.gender().name());  // AnimalGender enum -> "M"/"F"/"Q" (CHAR(1) 컬럼)
       ps.setString(5, item.typeName());
       ps.setString(6, item.age());
       ps.setString(7, item.location());

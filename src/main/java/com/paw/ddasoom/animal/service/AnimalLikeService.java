@@ -32,26 +32,18 @@ public class AnimalLikeService {
 
   // 좋아요
   public void like(Long animalId, Long memberId) {
-    try {
-      if (animalRepository.existsById(animalId) == false) {
-        throw new AnimalException(AnimalErrorCode.ANIMAL_NOT_FOUND);
-      }
-      redisTemplate.opsForHash().put(DIRTY_KEY, field(animalId, memberId), "1");
-    } catch (AnimalException e) {
-      log.error("Animal iD({})는 없는 동물입니다.", animalId);
+    if (!animalRepository.existsById(animalId)) {
+      throw new AnimalException(AnimalErrorCode.ANIMAL_NOT_FOUND);
     }
+    redisTemplate.opsForHash().put(DIRTY_KEY, field(animalId, memberId), "1");    
   }
 
   // 좋아요 취소
   public void unlike(Long animalId, Long memberId) {
-    try {
-      if (animalRepository.existsById(animalId) == false) {
-        throw new AnimalException(AnimalErrorCode.ANIMAL_NOT_FOUND);
-      }
-      redisTemplate.opsForHash().put(DIRTY_KEY, field(animalId, memberId), "0");
-    } catch (AnimalException e) {
-      log.error("Animal iD({})는 없는 동물입니다.", animalId);
+    if (!animalRepository.existsById(animalId)) {
+      throw new AnimalException(AnimalErrorCode.ANIMAL_NOT_FOUND);
     }
+    redisTemplate.opsForHash().put(DIRTY_KEY, field(animalId, memberId), "0");
   }
 
   /**
@@ -80,7 +72,6 @@ public class AnimalLikeService {
     }
 
     List<Object> fields = new ArrayList<>(animalIds.size());
-
     for (Long animalId : animalIds) {
       fields.add(field(animalId, memberId));
     }
@@ -121,7 +112,7 @@ public class AnimalLikeService {
       try {
         // memberId 파싱
         fieldMemberId = Long.parseLong(fieldStr.substring(separatorIndex + 1));
-        if (fieldMemberId.equals(memberId) == false) {
+        if (!fieldMemberId.equals(memberId)) {
           continue;
         }
   

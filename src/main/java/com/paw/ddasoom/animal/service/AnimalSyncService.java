@@ -34,6 +34,7 @@ public class AnimalSyncService {
    * @return 이번 동기화에서 실제로 upsert된(=검증을 통과한) 건수
    */
   public int syncAnimals() {
+    
     List<AnimalFetchResponse.AnimalItem> items = animalFetchService.fetchAnimals();
  
     List<AnimalSyncItem> validItems = new ArrayList<>(items.size());

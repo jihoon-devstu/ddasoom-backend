@@ -6,6 +6,11 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * 유기동물 API 형식에 맞춘 DTO
+ * AnimalFetchResponse
+ * @param response
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record AnimalFetchResponse(@JsonProperty("response") Response response) { 
     
@@ -20,7 +25,7 @@ public record AnimalFetchResponse(@JsonProperty("response") Response response) {
     @JsonProperty("totalCount") String totalCount
   ) {}
 
-  @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+  @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY) // 갯수가 1개인 대상은 Array로 바로 직렬화함
   @JsonIgnoreProperties(ignoreUnknown = true)
   public record Items(
     @JsonProperty("item") List<AnimalItem> item 
@@ -41,5 +46,4 @@ public record AnimalFetchResponse(@JsonProperty("response") Response response) {
     @JsonProperty("popfile1") String imageUrl,
     @JsonProperty("happenDt") String rescuedAt
   ) {}
-
 }

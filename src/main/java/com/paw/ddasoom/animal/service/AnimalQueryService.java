@@ -40,7 +40,7 @@ public class AnimalQueryService {
   private final AnimalLikeRepository animalLikeRepository;
   private final AnimalLikeService animalLikeService; // Redis flush 안된 것 좋아요 오버레이 조회용
 
-  // 목록 (동적 검색 + 페이징). memberId 있으면 이번 페이지의 isLiked를 배치 조회로 채운다.
+  // 목록 페이지 (동적 검색 + 페이징). memberId 있으면 이번 페이지의 isLiked를 배치 조회로 채운다.
   public PageResponse<AnimalListPageResponse> search(
     AnimalListPageRequest request, Long memberId, Pageable pageable) {
 
@@ -74,7 +74,7 @@ public class AnimalQueryService {
         animal -> AnimalListPageResponse.from(animal, likedIds.contains(animal.getId())));
   }
 
-  // 상세. memberId 있으면 단건 좋아요 여부(isLiked)를 계산한다.
+  // 상세 페이지. memberId 있으면 단건 좋아요 여부(isLiked)를 계산한다.
   public AnimalDetailPageResponse getDetail(Long animalId, Long memberId) {
     
     Animal animal = animalRepository.findById(animalId)
@@ -90,18 +90,12 @@ public class AnimalQueryService {
   public List<AnimalMainPageResponse> getMainPreview(Long memberId) {
 
     List<Animal> animals = animalRepository.findTop4ByOrderByIdDesc();
-
     List<Long> animalIds = animals.stream().map(Animal::getId).toList();
-
     Set<Long> likedIds = resolveLikedIds(animalIds, memberId);
 
     return animals.stream()
       .map(animal -> AnimalMainPageResponse.from(animal, likedIds.contains(animal.getId())))
       .toList();
-
-    // return animalRepository.findTop4ByOrderByIdDesc().stream()
-    //   .map(AnimalMainPageResponse::from)
-    //   .toList();
   }
 
   // 마이페이지 - 내가 좋아요한 동물 목록(최근순). 정의상 전부 isLiked=true.
@@ -129,6 +123,7 @@ public class AnimalQueryService {
 
     Set<Long> likedIds = new HashSet<>(animalLikeRepository.findLikedAnimalIds(memberId, animalIds));
     Map<Long, Boolean> overrides = animalLikeService.getPendingLikeOverrides(memberId, animalIds);
+    
     overrides.forEach((animalId, liked) -> {
       if (liked) {
         likedIds.add(animalId);
@@ -139,7 +134,9 @@ public class AnimalQueryService {
   }
 
   private Set<Long> resolveEffectiveLikedIds(Long memberId) {
+
     Set<Long> likedIds = new HashSet<>(animalLikeRepository.findAllLikedAnimalIds(memberId));
+
     animalLikeService.getPendingLikeOverrides(memberId).forEach((animalId, liked) -> {
       if (liked) {
         likedIds.add(animalId);

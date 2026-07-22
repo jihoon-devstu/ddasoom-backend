@@ -60,7 +60,7 @@ public class PostCommentController {
     @DeleteMapping("/{commentId}")
     public ResponseEntity<ApiResponse<Void>> deleteComment(
             @PathVariable(name = "postId") Long postId,
-            @PathVariable(name = "commnetId") Long commentId,
+            @PathVariable(name = "commentId") Long commentId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         postCommentService.delete(postId, commentId, userDetails.getMemberId());
